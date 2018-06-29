@@ -2,21 +2,27 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"time"
-	"strconv"
 	"log"
+	"os"
+	"strconv"
 	"strings"
+	"time"
 
+	"github.com/labstack/gommon/color"
 	"github.com/mkideal/cli"
 )
 
-var (
+const (
+	appName    = "Ush - Universal Shell"
 	appVersion = "0.0.1"
 	appLicense = "MIT License"
 
 	appLicenseDetail = "A short and simple permissive license with conditions only requiring \npreservation of copyright and license notices. Licensed works, \nmodifications, and larger works may be distributed under different \nterms and without source code."
 	appCopyrightYear = 2018
+)
+
+var (
+	clr = color.Color{}
 )
 
 func main() {
@@ -28,6 +34,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+	print("\n")
 }
 
 var help = cli.HelpCommand("Provides Help information for built-in commands")
@@ -39,22 +46,27 @@ type rootT struct {
 }
 
 var root = &cli.Command{
-	Desc: "Welcome to UniversalShell (ush)",
+	Desc: clr.Bold(appName),
 	// Argv is a factory function of argument object
 	// ctx.Argv() is if Command.Argv == nil or Command.Argv() is nil
 	Argv: func() interface{} { return new(rootT) },
 	Fn: func(ctx *cli.Context) error {
 		argv := ctx.Argv().(*rootT)
-		if argv.Version {
-			currentYear := time.Now().UTC().Year()
-			copyrightDuration := strconv.Itoa(appCopyrightYear)
-			if currentYear > appCopyrightYear {
-				copyrightDuration += "-" + strconv.Itoa(currentYear)
+		ctx.String("%s \n", clr.Bold(appName))
+		if argv.Version || argv.License {
+			if argv.Version {
+				currentYear := time.Now().UTC().Year()
+				copyrightDuration := strconv.Itoa(appCopyrightYear)
+				if currentYear > appCopyrightYear {
+					copyrightDuration += "-" + strconv.Itoa(currentYear)
+				}
+				ctx.String("version %s\nCopyright (c) %s Abhishek Kumar\n", appVersion, copyrightDuration)
 			}
-			ctx.String("UniversalShell (ush)    version %s\nCopyright (c) %s Abhishek Kumar.\nIt is licensed under the '%s'.\n\n", appVersion, copyrightDuration, appLicense)
-		}
-		if argv.License {
-			ctx.String("The 'UniversalShell (ush)' is licensed under the '%s'\n\n%s\n\n", appLicense, appLicenseDetail)
+			if argv.License {
+				ctx.String("It is licensed under the '%s'\n\n%s\n", appLicense, appLicenseDetail)
+			}
+		} else {
+			ctx.String("\nError: Command is missing! \n\nTip: Try any of these, \n     $ ush -h\n     $ ush --help\n     $ ush help\n")
 		}
 		return nil
 	},
@@ -80,7 +92,7 @@ var pwd = &cli.Command{
 
 type lsT struct {
 	cli.Helper
-	Tab bool `cli:"t,tab" usage:"show tab separated list"`
+	Tab  bool `cli:"t,tab" usage:"show tab separated list"`
 	Long bool `cli:"l,long" usage:"display extended file metadata as a table"`
 }
 
@@ -105,13 +117,13 @@ var ls = &cli.Command{
 				list := []string{}
 				for _, file := range items {
 					if argv.Long {
-						row := []string{string(file.Mode()), string(file.Size()), file.Name()/*, string(file.IsDir()), string(file.ModTime())*/}
+						row := []string{string(file.Mode()), string(file.Size()), file.Name() /*, string(file.IsDir()), string(file.ModTime())*/}
 						list = append(list, strings.Join(row[:], "\t"))
 					} else {
 						list = append(list, file.Name())
-					}					
-			    }
-			    ctx.String("%s\n", strings.Join(list[:], separator))
+					}
+				}
+				ctx.String("%s\n", strings.Join(list[:], separator))
 			}
 		}
 		return nil
@@ -119,14 +131,14 @@ var ls = &cli.Command{
 }
 
 func ReadDir(dirname string) ([]os.FileInfo, error) {
-    f, err := os.Open(dirname)
-    if err != nil {
-        return nil, err
-    }
-    list, err := f.Readdir(-1)
-    f.Close()
-    if err != nil {
-        return nil, err
-    }
-    return list, nil
+	f, err := os.Open(dirname)
+	if err != nil {
+		return nil, err
+	}
+	list, err := f.Readdir(-1)
+	f.Close()
+	if err != nil {
+		return nil, err
+	}
+	return list, nil
 }
