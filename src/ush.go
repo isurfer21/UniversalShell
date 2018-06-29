@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"code.cloudfoundry.org/bytefmt"
+	"github.com/inhies/go-bytesize"
 	"github.com/labstack/gommon/color"
 	"github.com/mkideal/cli"
 )
@@ -124,11 +124,12 @@ var ls = &cli.Command{
 							isDir = "Dir"
 						}
 						fileMod := file.Mode().String()
-						fileSize := bytefmt.ByteSize(uint64(file.Size()))
+						bytesize.Format = "%.1f"
+						fileSize := bytesize.New(float64(file.Size())).String()
 						if argv.Raw {
 							fileSize = strconv.FormatInt(file.Size(), 10)
 						}
-						fileModTime := file.ModTime().Format(time.UnixDate)
+						fileModTime := file.ModTime().Format("Jan 02, 2006 15:04")
 						if argv.Raw {
 							fileModTime = file.ModTime().String()
 						}
