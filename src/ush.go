@@ -6,6 +6,7 @@ import (
 	"time"
 	"strconv"
 	"log"
+	"strings"
 
 	"github.com/mkideal/cli"
 )
@@ -22,6 +23,7 @@ func main() {
 	if err := cli.Root(root,
 		cli.Tree(help),
 		cli.Tree(pwd),
+		cli.Tree(ls),
 	).Run(os.Args[1:]); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -74,4 +76,57 @@ var pwd = &cli.Command{
 		ctx.String("%s\n", dir)
 		return nil
 	},
+}
+
+type lsT struct {
+	cli.Helper
+	Tab bool `cli:"t,tab" usage:"show tab separated list"`
+	Long bool `cli:"l,long" usage:"display extended file metadata as a table"`
+}
+
+var ls = &cli.Command{
+	Name: "ls",
+	Desc: "Displays a list of files and sub-directories in a directory",
+	Argv: func() interface{} { return new(lsT) },
+	Fn: func(ctx *cli.Context) error {
+		pwd, err := os.Getwd()
+		if err != nil {
+			log.Fatal(err)
+		} else {
+			items, err := ReadDir(pwd)
+			if err != nil {
+				log.Fatal(err)
+			} else {
+				argv := ctx.Argv().(*lsT)
+				separator := "\n"
+				if argv.Tab {
+					separator = " \t"
+				}
+				list := []string{}
+				for _, file := range items {
+					if argv.Long {
+						row := []string{string(file.Mode()), string(file.Size()), file.Name()/*, string(file.IsDir()), string(file.ModTime())*/}
+						list = append(list, strings.Join(row[:], "\t"))
+					} else {
+						list = append(list, file.Name())
+					}					
+			    }
+			    ctx.String("%s\n", strings.Join(list[:], separator))
+			}
+		}
+		return nil
+	},
+}
+
+func ReadDir(dirname string) ([]os.FileInfo, error) {
+    f, err := os.Open(dirname)
+    if err != nil {
+        return nil, err
+    }
+    list, err := f.Readdir(-1)
+    f.Close()
+    if err != nil {
+        return nil, err
+    }
+    return list, nil
 }
