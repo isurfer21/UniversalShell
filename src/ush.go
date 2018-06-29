@@ -119,15 +119,10 @@ var ls = &cli.Command{
 				log.Fatal(err)
 			} else {
 				separator := "  "
-				if argv.Vertical {
-					separator = "\n"
-				}
-				if argv.Horizontal {
-					separator = " \t"
-				}
 				list := []string{}
 				for _, file := range items {
 					if argv.Long || argv.Raw {
+						separator = "\n"
 						isDir := ""
 						if file.IsDir() {
 							isDir = "Dir"
@@ -151,6 +146,12 @@ var ls = &cli.Command{
 						}
 						list = append(list, strings.Join(row[:], "\t"))
 					} else {
+						if argv.Vertical {
+							separator = "\n"
+						}
+						if argv.Horizontal {
+							separator = " \t"
+						}
 						list = append(list, file.Name())
 					}
 				}
