@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 	"strconv"
+	"log"
 
 	"github.com/mkideal/cli"
 )
@@ -20,14 +21,14 @@ var (
 func main() {
 	if err := cli.Root(root,
 		cli.Tree(help),
-		cli.Tree(child),
+		cli.Tree(pwd),
 	).Run(os.Args[1:]); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
 
-var help = cli.HelpCommand("display help information")
+var help = cli.HelpCommand("Provides Help information for built-in commands")
 
 type rootT struct {
 	cli.Helper
@@ -57,18 +58,20 @@ var root = &cli.Command{
 	},
 }
 
-type childT struct {
+type pwdT struct {
 	cli.Helper
-	Name string `cli:"name" usage:"your name"`
 }
 
-var child = &cli.Command{
-	Name: "child",
-	Desc: "this is a child command",
-	Argv: func() interface{} { return new(childT) },
+var pwd = &cli.Command{
+	Name: "pwd",
+	Desc: "Displays the path of present working directory",
+	Argv: func() interface{} { return new(pwdT) },
 	Fn: func(ctx *cli.Context) error {
-		argv := ctx.Argv().(*childT)
-		ctx.String("Hello, child command, I am %s\n", argv.Name)
+		dir, err := os.Getwd()
+		if err != nil {
+			log.Fatal(err)
+		}
+		ctx.String("%s\n", dir)
 		return nil
 	},
 }
