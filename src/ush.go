@@ -93,9 +93,11 @@ var pwd = &cli.Command{
 
 type lsT struct {
 	cli.Helper
-	Tab  bool `cli:"t,tab" usage:"show tab separated list"`
-	Long bool `cli:"l,long" usage:"display extended file metadata as a table"`
-	Raw  bool `cli:"r,raw" usage:"display raw extended file metadata as a table"`
+	Horizontal bool   `cli:"x,horz" usage:"display the list horizontally"`
+	Vertical   bool   `cli:"y,vert" usage:"display the list vertically"`
+	Long       bool   `cli:"l,long" usage:"display extended file metadata as a table"`
+	Raw        bool   `cli:"r,raw" usage:"display raw extended file metadata as a table"`
+	Target     string `cli:"t,target" usage:"display the list at target location"`
 }
 
 var ls = &cli.Command{
@@ -103,17 +105,24 @@ var ls = &cli.Command{
 	Desc: "Displays a list of files and sub-directories in a directory",
 	Argv: func() interface{} { return new(lsT) },
 	Fn: func(ctx *cli.Context) error {
+		argv := ctx.Argv().(*lsT)
 		pwd, err := os.Getwd()
 		if err != nil {
 			log.Fatal(err)
 		} else {
-			items, err := ReadDir(pwd)
+			location := pwd
+			if argv.Target != "" {
+				location = argv.Target
+			}
+			items, err := ReadDir(location)
 			if err != nil {
 				log.Fatal(err)
 			} else {
-				argv := ctx.Argv().(*lsT)
-				separator := "\n"
-				if argv.Tab {
+				separator := "  "
+				if argv.Vertical {
+					separator = "\n"
+				}
+				if argv.Horizontal {
 					separator = " \t"
 				}
 				list := []string{}
