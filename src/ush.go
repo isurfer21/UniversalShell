@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"code.cloudfoundry.org/bytefmt"
 	"github.com/labstack/gommon/color"
 	"github.com/mkideal/cli"
 )
@@ -94,6 +95,7 @@ type lsT struct {
 	cli.Helper
 	Tab  bool `cli:"t,tab" usage:"show tab separated list"`
 	Long bool `cli:"l,long" usage:"display extended file metadata as a table"`
+	Raw  bool `cli:"r,raw" usage:"display raw extended file metadata as a table"`
 }
 
 var ls = &cli.Command{
@@ -116,8 +118,27 @@ var ls = &cli.Command{
 				}
 				list := []string{}
 				for _, file := range items {
-					if argv.Long {
-						row := []string{string(file.Mode()), string(file.Size()), file.Name() /*, string(file.IsDir()), string(file.ModTime())*/}
+					if argv.Long || argv.Raw {
+						isDir := ""
+						if file.IsDir() {
+							isDir = "Dir"
+						}
+						fileMod := file.Mode().String()
+						fileSize := bytefmt.ByteSize(uint64(file.Size()))
+						if argv.Raw {
+							fileSize = strconv.FormatInt(file.Size(), 10)
+						}
+						fileModTime := file.ModTime().Format(time.UnixDate)
+						if argv.Raw {
+							fileModTime = file.ModTime().String()
+						}
+						row := []string{
+							fileMod,
+							fileSize,
+							fileModTime,
+							isDir,
+							file.Name(),
+						}
 						list = append(list, strings.Join(row[:], "\t"))
 					} else {
 						list = append(list, file.Name())
