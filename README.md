@@ -74,9 +74,9 @@ You can generate an executable for your system via following commands.
 ```
 $ git clone https://github.com/isurfer21/UniversalShell.git
 $ cd UniversalShell
-$ go build -o ./bin/ush ./src/ush.go
-$ ls ./bin
-ush
+$ go build ./ush.go
+$ ls
+LICENSE		README.md	cmd		ush		ush.go
 ```
 After that, put **ush** anywhere on your system and export it's path in *.bashrc* or *.bash_profile*.
 
@@ -84,9 +84,13 @@ After that, put **ush** anywhere on your system and export it's path in *.bashrc
 ```
 > git clone https://github.com/isurfer21/UniversalShell.git
 > cd UniversalShell
-> go build -o .\bin\ush.exe .\src\ush.go
-> dir .\bin
+> go build ush.go
+> dir /b
+LICENSE
+README.md
+cmd
 ush.exe
+ush.go
 ```
 After that, put **ush.exe** anywhere on your system and set it's path in *environment variable*.
 
@@ -97,7 +101,7 @@ While development, you can compile & execute the source-code using following com
 ```
 $ git clone https://github.com/isurfer21/UniversalShell.git
 $ cd UniversalShell
-$ go run ./src/ush.go -h
+$ go run ./ush.go -h
 ```
 The flag *-h* in the last line can be replaced by any available commands.
 
@@ -105,6 +109,6 @@ The flag *-h* in the last line can be replaced by any available commands.
 ```
 $ git clone https://github.com/isurfer21/UniversalShell.git
 $ cd UniversalShell
-$ go run .\src\ush.go -h
+$ go run ush.go -h
 ```
 The flag *-h* in the last line can be replaced by any available commands.
