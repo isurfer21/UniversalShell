@@ -16,7 +16,10 @@ import (
 const (
 	i18nPwdCmdTitle  = "Path of working directory"
 	i18nPwdCmdDetail = `
-Displays the path of current/present working directory
+Path of working directory
+
+Writes the absolute pathname of the current working directory 
+to the standard output.
 `
 )
 

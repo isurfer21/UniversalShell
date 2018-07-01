@@ -20,7 +20,10 @@ import (
 const (
 	i18nLsCmdTitle  = "List directory contents"
 	i18nLsCmdDetail = `
-List directory contents, i.e., it displays a list of files and sub-directories in a directory
+List directory contents
+
+It displays a list of files and sub-directories in a directory
+which could be rendered in various ways based on passed flags.
 `
 )
 
