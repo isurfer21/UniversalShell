@@ -6,7 +6,7 @@ This work is licensed under the 'MIT License'.
 package cmd
 
 import (
-	"log"
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -39,7 +39,8 @@ var renCmd = &cobra.Command{
 		if len(args) == 2 {
 			err := os.Rename(args[0], args[1])
 			if err != nil {
-				log.Fatal(err)
+				fmt.Println(err)
+				os.Exit(1)
 			}
 		}
 	},

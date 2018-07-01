@@ -6,7 +6,7 @@ This work is licensed under the 'MIT License'.
 package cmd
 
 import (
-	"log"
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -27,7 +27,7 @@ and the standard input device is a terminal, the user is prompted
 type rmFlag struct {
 }
 
-var rmFlg cpFlag
+var rmFlg rmFlag
 
 // rmCmd represents the rm command
 var rmCmd = &cobra.Command{
@@ -37,15 +37,24 @@ var rmCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 1 {
-			path, err := os.Stat(args[0])
-			if err == nil {
+			path, pathErr := os.Stat(args[0])
+			if pathErr == nil {
 				if path.IsDir() {
-					os.RemoveAll(args[0])
+					dirErr := os.RemoveAll(args[0])
+					if dirErr != nil {
+						fmt.Println(dirErr)
+						os.Exit(1)
+					}
 				} else {
-					os.Remove(args[0])
+					fileErr := os.Remove(args[0])
+					if fileErr != nil {
+						fmt.Println(fileErr)
+						os.Exit(1)
+					}
 				}
 			} else {
-				log.Fatal(err)
+				fmt.Println(pathErr)
+				os.Exit(1)
 			}
 		}
 	},

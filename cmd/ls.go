@@ -7,7 +7,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"runtime"
 	"strconv"
@@ -45,7 +44,8 @@ var lsCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		pwd, err := os.Getwd()
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			os.Exit(1)
 		} else {
 			location := pwd
 			if len(args) > 0 {
@@ -53,7 +53,8 @@ var lsCmd = &cobra.Command{
 			}
 			items, err := readDir(location)
 			if err != nil {
-				log.Fatal(err)
+				fmt.Println(err)
+				os.Exit(1)
 			} else {
 				separator := "  "
 				list := []string{}

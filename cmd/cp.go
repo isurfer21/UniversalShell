@@ -8,7 +8,6 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -43,7 +42,8 @@ var cpCmd = &cobra.Command{
 		if len(args) == 2 {
 			err := copyFile(args[0], args[1])
 			if err != nil {
-				log.Fatal(err)
+				fmt.Println(err)
+				os.Exit(1)
 			}
 		}
 	},
