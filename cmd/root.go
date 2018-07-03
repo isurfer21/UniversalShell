@@ -8,6 +8,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"runtime"
 	"strconv"
 	"time"
 
@@ -75,7 +76,7 @@ var (
 var rootCmd = &cobra.Command{
 	Use:   "ush",
 	Short: i18nRootAppName,
-	Long:  dye.Bold(i18nRootAppName) + i18nRootAppObjective,
+	Long:  proviso() + dye.Bold(i18nRootAppName) + i18nRootAppObjective,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(dye.Bold(i18nRootAppName))
 		if rootFlg.version || rootFlg.license {
@@ -94,6 +95,13 @@ var rootCmd = &cobra.Command{
 			fmt.Printf(i18nRootTplCommandMissing)
 		}
 	},
+}
+
+func proviso() (str string) {
+	if runtime.GOOS == "windows" {
+		dye.Disable()
+	}
+	return ""
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately. This is called by main.main(). It only needs to happen once to the rootCmd.

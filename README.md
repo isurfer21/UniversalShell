@@ -80,6 +80,13 @@ LICENSE		README.md	cmd		ush		ush.go
 ```
 After that, put **ush** anywhere on your system and export it's path in *.bashrc* or *.bash_profile*.
 
+##### On MacOS / Linux via Go package manager
+```
+go get -d github.com/isurfer21/UniversalShell
+cd $GOPATH/src/github.com/isurfer21/UniversalShell/
+go build -o $GOPATH/bin/ush ./ush.go
+```
+
 ##### On Windows
 ```
 > git clone https://github.com/isurfer21/UniversalShell.git
