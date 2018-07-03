@@ -107,7 +107,9 @@ drwxr-xr-x	102.0B	Jun 29, 2018 22:25	Dir	src
 ### For end-users
 You can generate an executable for your system via following commands.
 
-##### On MacOS / Linux 
+#### On MacOS / Linux 
+
+##### Using Git CLI 
 ```
 $ git clone https://github.com/isurfer21/UniversalShell.git
 $ cd UniversalShell
@@ -117,14 +119,16 @@ LICENSE		README.md	cmd		ush		ush.go
 ```
 After that, put **ush** anywhere on your system and export it's path in *.bashrc* or *.bash_profile*.
 
-##### On MacOS / Linux via Go package manager
+##### Using ```go get```
 ```
-go get -d github.com/isurfer21/UniversalShell
+go get -d -u github.com/isurfer21/UniversalShell
 cd $GOPATH/src/github.com/isurfer21/UniversalShell/
 go build -o $GOPATH/bin/ush ./ush.go
 ```
 
-##### On Windows
+#### On Windows
+
+##### Using Git CLI
 ```
 > git clone https://github.com/isurfer21/UniversalShell.git
 > cd UniversalShell
@@ -137,6 +141,13 @@ ush.exe
 ush.go
 ```
 After that, put **ush.exe** anywhere on your system and set it's path in *environment variable*.
+
+##### Using ```go get```
+```
+go get -d -u github.com/isurfer21/UniversalShell
+cd %GOPATH%\src\github.com\isurfer21\UniversalShell\
+go build -o %GOPATH%\bin\ush.exe ush.go
+```
 
 ### For developers
 While development, you can compile & execute the source-code using following commands.
