@@ -31,6 +31,43 @@ To create a cross-platform application as a portable executable that could run b
  - Compatible to Windows, MacOS, Linux
  - Required no external dependency
 
+### Features
+ - [ ] cat
+ - [x] cd
+ - [ ] chmod
+ - [x] cp
+ - [ ] dirs
+ - [ ] echo
+ - [ ] error
+ - [ ] exec
+ - [ ] find
+ - [ ] grep
+ - [ ] head
+ - [x] help
+ - [ ] ln
+ - [x] ls
+ - [x] mkdir
+ - [x] mv
+ - [ ] popd
+ - [ ] pushd
+ - [x] pwd
+ - [x] rm
+ - [ ] sed
+ - [ ] set
+ - [ ] sort
+ - [ ] tail
+ - [ ] tmpdir
+ - [ ] test
+ - [ ] touch
+ - [ ] uniq
+ - [ ] which
+
+### References
+ - Bash, i.e., Linux Terminal
+ - Batch, i.e., Windows Command Prompt
+ - [shelljs](https://github.com/shelljs/shelljs)
+ - [shx](https://github.com/shelljs/shx)
+
 ### Known issues / limitations
 
 ##### On Windows
@@ -108,14 +145,16 @@ While development, you can compile & execute the source-code using following com
 ```
 $ git clone https://github.com/isurfer21/UniversalShell.git
 $ cd UniversalShell
+$ go get ./...
 $ go run ./ush.go -h
 ```
 The flag *-h* in the last line can be replaced by any available commands.
 
 ##### On Windows
 ```
-$ git clone https://github.com/isurfer21/UniversalShell.git
-$ cd UniversalShell
-$ go run ush.go -h
+> git clone https://github.com/isurfer21/UniversalShell.git
+> cd UniversalShell
+> go get ./...
+> go run ush.go -h
 ```
 The flag *-h* in the last line can be replaced by any available commands.
