@@ -170,3 +170,47 @@ The flag *-h* in the last line can be replaced by any available commands.
 > go run ush.go -h
 ```
 The flag *-h* in the last line can be replaced by any available commands.
+
+### Cross-platform shell scripting with Ush using Lua
+[Lua](http://www.lua.org/) is a powerful, efficient, lightweight, embeddable scripting language. It supports procedural programming, object-oriented programming, functional programming, data-driven programming, and data description.
+
+Lua is **cross-platform**, since the interpreter is written in ANSI C, and has a relatively simple C API.
+
+So we can use Lua in place of Bash/Batch script. Although you can use any other language of your choice but considering the size of Lua interpreter (less than 1 MB), it looks like the best choice.
+
+Pre-compiled Lua libraries and executables can be downloaded from [LuaBinaries](http://luabinaries.sourceforge.net/download.html). 
+
+Place these files from where it can be globally accessible via terminal.
+
+Now to write a shell script, create a *task.lua* file. Append the below method at the top; after which you can write your shell task.
+```
+-- Prerequisite method
+function shell(command)
+	local handle = io.popen(command)
+	local result = handle:read("*a")
+	handle:close()
+	return result
+end
+
+-- Start you shell task from here
+print(shell('ush ls -l'))
+```
+
+We can modify the above code for Ush only, as given below
+```
+-- Prerequisite method
+function ush(command)
+	local handle = io.popen('ush ' .. command)
+	local result = handle:read("*a")
+	handle:close()
+	return result
+end
+
+-- Start you shell task from here
+print(ush('ls -l'))
+```
+
+Alternatively, you can use [luash](https://github.com/zserge/luash) or [lit-sh](https://github.com/james2doyle/lit-sh) as well.
+
+
+
