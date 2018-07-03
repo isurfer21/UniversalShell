@@ -95,40 +95,48 @@ README.md
 src
 
 $ ush ls -l
-drwxr-xr-x	544.0B	Jun 30, 2018 02:56	Dir	.git
--rw-r--r--	4.0B	Jun 29, 2018 10:15		.gitignore
-drwxr-xr-x	102.0B	Jun 30, 2018 01:56	Dir	bin
--rw-r--r--	1.0KB	Jun 28, 2018 22:16		LICENSE
--rw-r--r--	275.0B	Jun 30, 2018 01:53		README.md
-drwxr-xr-x	102.0B	Jun 29, 2018 22:25	Dir	src
+drwxr-xr-x	-	Jul 03, 2018 15:45	.git/
+-rw-r--r--	24.0B	Jul 02, 2018 11:40	.gitignore
+drwxr-xr-x	-	Jul 03, 2018 15:45	cmd/
+-rw-r--r--	1.0KB	Jun 29, 2018 11:50	LICENSE
+-rw-r--r--	4.6KB	Jul 03, 2018 15:59	README.md
+-rwxr-xr-x	9.6MB	Jul 03, 2018 15:53	ush
+-rw-r--r--	170.0B	Jul 02, 2018 11:40	ush.go
 
 ```
 
 ### For end-users
 You can generate an executable for your system via following commands.
 
-#### On MacOS / Linux 
+#### Installation using ```go get``` 
 
-##### Using Git CLI 
+##### On MacOS / Linux 
+```
+go get -d -u github.com/isurfer21/UniversalShell
+cd $GOPATH/src/github.com/isurfer21/UniversalShell/
+go build -o $GOPATH/bin/ush ush.go
+```
+
+#### On Windows
+```
+go get -d -u github.com/isurfer21/UniversalShell
+cd %GOPATH%\src\github.com\isurfer21\UniversalShell\
+go build -o %GOPATH%\bin\ush.exe ush.go
+```
+
+#### Manual installation using Git CLI
+
+##### On MacOS / Linux 
 ```
 $ git clone https://github.com/isurfer21/UniversalShell.git
 $ cd UniversalShell
-$ go build ./ush.go
+$ go build ush.go
 $ ls
 LICENSE		README.md	cmd		ush		ush.go
 ```
 After that, put **ush** anywhere on your system and export it's path in *.bashrc* or *.bash_profile*.
 
-##### Using ```go get```
-```
-go get -d -u github.com/isurfer21/UniversalShell
-cd $GOPATH/src/github.com/isurfer21/UniversalShell/
-go build -o $GOPATH/bin/ush ./ush.go
-```
-
-#### On Windows
-
-##### Using Git CLI
+##### On Windows
 ```
 > git clone https://github.com/isurfer21/UniversalShell.git
 > cd UniversalShell
@@ -142,13 +150,6 @@ ush.go
 ```
 After that, put **ush.exe** anywhere on your system and set it's path in *environment variable*.
 
-##### Using ```go get```
-```
-go get -d -u github.com/isurfer21/UniversalShell
-cd %GOPATH%\src\github.com\isurfer21\UniversalShell\
-go build -o %GOPATH%\bin\ush.exe ush.go
-```
-
 ### For developers
 While development, you can compile & execute the source-code using following commands.
 
@@ -157,7 +158,7 @@ While development, you can compile & execute the source-code using following com
 $ git clone https://github.com/isurfer21/UniversalShell.git
 $ cd UniversalShell
 $ go get ./...
-$ go run ./ush.go -h
+$ go run ush.go -h
 ```
 The flag *-h* in the last line can be replaced by any available commands.
 
