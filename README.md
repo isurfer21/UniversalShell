@@ -39,7 +39,7 @@ To create a cross-platform application as a portable executable that could run b
  - [ ] dirs
  - [x] echo
  - [ ] error
- - [ ] exec
+ - [x] exec
  - [ ] find
  - [ ] grep
  - [ ] head
