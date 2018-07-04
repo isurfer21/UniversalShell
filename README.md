@@ -150,6 +150,12 @@ ush.go
 ```
 After that, put **ush.exe** anywhere on your system and set it's path in *environment variable*.
 
+##### Tip / Advice
+The *ldflags* can be used to reduce the binary file size
+```
+$ go build -ldflags="-s -w" ush.go
+```
+
 ### For developers
 While development, you can compile & execute the source-code using following commands.
 
