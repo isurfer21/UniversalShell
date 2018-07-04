@@ -21,8 +21,8 @@ const (
 	i18nLsCmdDetail = `
 List directory contents
 
-It displays a list of files and sub-directories in a directory
-which could be rendered in various ways based on passed flags.
+It displays a list of files and sub-directories in a directory which could be 
+rendered in various ways based on passed flags.
 `
 )
 

@@ -17,8 +17,8 @@ const (
 	i18nMkdirCmdDetail = `
 Make directories
 
-It creates the directories named as operands, in the order
-specified, using mode rwxrwxrwx (0777). 
+It creates the directories named as operands, in the order specified, using 
+mode rwxrwxrwx (0777). 
 `
 )
 
@@ -33,17 +33,17 @@ var mkdirCmd = &cobra.Command{
 	Use:   "mkdir",
 	Short: i18nMkdirCmdTitle,
 	Long:  i18nMkdirCmdDetail,
-	Args:  cobra.ExactArgs(1),
+	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 1 {
+		for i := 0; i < len(args); i++ {
 			if mkdirFlg.path {
-				pathErr := os.MkdirAll(args[0], 0777)
+				pathErr := os.MkdirAll(args[i], 0777)
 				if pathErr != nil {
 					fmt.Println(pathErr)
 					os.Exit(1)
 				}
 			} else {
-				fileErr := os.Mkdir(args[0], 0777)
+				fileErr := os.Mkdir(args[i], 0777)
 				if fileErr != nil {
 					fmt.Println(fileErr)
 					os.Exit(1)

@@ -7,18 +7,22 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
 
 const (
-	i18nMvCmdTitle  = "Move files and directories"
+	i18nMvCmdTitle  = "Move or rename files and directories"
 	i18nMvCmdDetail = `
-Move files and directories
+Move or rename files and directories
 
-It mv moves each file named by a source operand to a
-destination file in the existing directory named by the 
-directory operand.
+It moves each file named by a source operand to a destination file in the 
+existing directory named by the directory operand.
+
+It renames (moves) oldpath to newpath. If newpath already exists and is not a 
+directory, Rename replaces it. OS-specific restrictions may apply when oldpath 
+and newpath are in different directories.
 `
 )
 
@@ -36,7 +40,11 @@ var mvCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 2 {
-			fmt.Println("mv called")
+			err := os.Rename(args[0], args[1])
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
 		}
 	},
 }

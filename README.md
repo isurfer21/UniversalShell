@@ -37,7 +37,7 @@ To create a cross-platform application as a portable executable that could run b
  - [ ] chmod
  - [x] cp
  - [ ] dirs
- - [ ] echo
+ - [x] echo
  - [ ] error
  - [ ] exec
  - [ ] find
@@ -58,9 +58,9 @@ To create a cross-platform application as a portable executable that could run b
  - [ ] tail
  - [ ] tmpdir
  - [ ] test
- - [ ] touch
+ - [x] touch
  - [ ] uniq
- - [ ] which
+ - [x] which
 
 ### References
  - Bash, i.e., Linux Terminal

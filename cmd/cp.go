@@ -18,12 +18,12 @@ const (
 	i18nCpCmdDetail = `
 Copy files and directories
 
-It copies a file from src to dst. If src and dst files exist, and are
-the same, then return success. Otherise, attempt to create a hard link
-between the two files. If that fail, copies the contents of the file 
-named src to the file named by dst. The file will be created if it does 
-not already exist. If the destination file exists, all it's contents 
-will be replaced by the contents of the source file.
+It copies a file from src to dst. If src and dst files exist, and are the same, 
+then return success. Otherise, attempt to create a hard link between the two 
+files. If that fail, copies the contents of the file named src to the file 
+named by dst. The file will be created if it does not already exist. If the 
+destination file exists, all it's contents will be replaced by the contents of 
+the source file.
 `
 )
 

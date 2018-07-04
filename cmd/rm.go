@@ -17,10 +17,10 @@ const (
 	i18nRmCmdDetail = `
 Remove files and directories
 
-It attempts to remove the non-directory type files specified on the 
-command line. If the permissions of the file do not permit writing,
-and the standard input device is a terminal, the user is prompted
-(on the standard error output) for confirmation.
+It attempts to remove the non-directory type files specified on the command 
+line. If the permissions of the file do not permit writing, and the standard 
+input device is a terminal, the user is prompted (on the standard error output) 
+for confirmation.
 `
 )
 
@@ -34,19 +34,19 @@ var rmCmd = &cobra.Command{
 	Use:   "rm",
 	Short: i18nRmCmdTitle,
 	Long:  i18nRmCmdDetail,
-	Args:  cobra.ExactArgs(1),
+	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 1 {
-			path, pathErr := os.Stat(args[0])
+		for i := 0; i < len(args); i++ {
+			path, pathErr := os.Stat(args[i])
 			if pathErr == nil {
 				if path.IsDir() {
-					dirErr := os.RemoveAll(args[0])
+					dirErr := os.RemoveAll(args[i])
 					if dirErr != nil {
 						fmt.Println(dirErr)
 						os.Exit(1)
 					}
 				} else {
-					fileErr := os.Remove(args[0])
+					fileErr := os.Remove(args[i])
 					if fileErr != nil {
 						fmt.Println(fileErr)
 						os.Exit(1)

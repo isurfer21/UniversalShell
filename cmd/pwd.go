@@ -17,8 +17,8 @@ const (
 	i18nPwdCmdDetail = `
 Path of working directory
 
-Writes the absolute pathname of the current working directory 
-to the standard output.
+Writes the absolute pathname of the current working directory to the standard 
+output.
 `
 )
 
