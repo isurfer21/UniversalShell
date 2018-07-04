@@ -183,7 +183,7 @@ Pre-compiled Lua libraries and executables can be downloaded from [LuaBinaries](
 Place these files from where it can be globally accessible via terminal.
 
 Now to write a shell script, create a *task.lua* file. Append the below method at the top; after which you can write your shell task.
-```
+```lua
 -- Prerequisite method
 function shell(command)
 	local handle = io.popen(command)
@@ -197,7 +197,7 @@ print(shell('ush ls -l'))
 ```
 
 We can modify the above code for Ush only, as given below
-```
+```lua
 -- Prerequisite method
 function ush(command)
 	local handle = io.popen('ush ' .. command)
