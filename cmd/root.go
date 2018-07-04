@@ -80,14 +80,12 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(dye.Bold(i18nRootAppName))
 		if rootFlg.version || rootFlg.license {
-			if rootFlg.version {
-				currentYear := time.Now().UTC().Year()
-				copyrightDuration := strconv.Itoa(i18nRootAppCopyrightYear)
-				if currentYear > i18nRootAppCopyrightYear {
-					copyrightDuration += "-" + strconv.Itoa(currentYear)
-				}
-				fmt.Printf(i18nRootTplVersionCopyright, i18nRootAppVersion, copyrightDuration)
+			currentYear := time.Now().UTC().Year()
+			copyrightDuration := strconv.Itoa(i18nRootAppCopyrightYear)
+			if currentYear > i18nRootAppCopyrightYear {
+				copyrightDuration += "-" + strconv.Itoa(currentYear)
 			}
+			fmt.Printf(i18nRootTplVersionCopyright, i18nRootAppVersion, copyrightDuration)
 			if rootFlg.license {
 				fmt.Printf(i18nRootTplLicenseStatement, i18nRootAppLicense, i18nRootAppLicenseDetail)
 			}
@@ -146,5 +144,12 @@ func initConfig() {
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	}
+}
+
+func checkError(err error) {
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
 }

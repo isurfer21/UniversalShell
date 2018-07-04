@@ -33,7 +33,7 @@ To create a cross-platform application as a portable executable that could run b
 
 ### Features
  - [ ] cat
- - [x] cd
+ - [ ] cd
  - [ ] chmod
  - [x] cp
  - [ ] dirs
@@ -60,6 +60,7 @@ To create a cross-platform application as a portable executable that could run b
  - [ ] test
  - [x] touch
  - [ ] uniq
+ - [x] uname
  - [x] which
 
 ### References
