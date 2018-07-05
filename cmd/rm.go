@@ -26,7 +26,47 @@ for confirmation.
 `
 )
 
-type rmFlag struct {
+type RmLib struct {
+}
+
+func (rm *RmLib) handleError(err error) {
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+func (rm *RmLib) isDirEmpty(name string) (bool, error) {
+	f, err := os.Open(name)
+	if err != nil {
+		return false, err
+	}
+	defer f.Close()
+
+	_, err = f.Readdirnames(1) // Or f.Readdir(1)
+	if err == io.EOF {
+		return true, nil
+	}
+	return false, err // Either not empty or error, suits both cases
+}
+
+func (rm *RmLib) logVerbose(s string) {
+	if rmFlg.verbose {
+		fmt.Println(s)
+	}
+}
+
+func (rm *RmLib) delAll(path string) {
+	rm.handleError(os.RemoveAll(path))
+	rm.logVerbose(path)
+}
+
+func (rm *RmLib) del(path string) {
+	rm.handleError(os.Remove(path))
+	rm.logVerbose(path)
+}
+
+type RmFlag struct {
 	dir       bool
 	force     bool
 	confirm   bool
@@ -37,7 +77,10 @@ type rmFlag struct {
 	whiteout  bool
 }
 
-var rmFlg rmFlag
+var (
+	rmLib RmLib
+	rmFlg RmFlag
+)
 
 // rmCmd represents the rm command
 var rmCmd = &cobra.Command{
@@ -51,37 +94,25 @@ var rmCmd = &cobra.Command{
 			if pathErr == nil {
 				if path.IsDir() {
 					if (rmFlg.hierarchy || rmFlg.recursive) && rmFlg.force {
-						checkError(os.RemoveAll(args[i]))
-						if rmFlg.verbose {
-							fmt.Println(args[i])
-						}
+						rmLib.delAll(args[i])
 					} else {
-						dirVoidStatus, dvsErr := isDirEmpty(args[i])
-						checkError(dvsErr)
+						dirVoidStatus, dvsErr := rmLib.isDirEmpty(args[i])
+						rmLib.handleError(dvsErr)
 						if dirVoidStatus {
-							checkError(os.Remove(args[i]))
-							if rmFlg.verbose {
-								fmt.Println(args[i])
-							}
+							rmLib.del(args[i])
 						} else {
 							if rmFlg.force {
 								items, itemErr := readDir(args[i])
-								checkError(itemErr)
+								rmLib.handleError(itemErr)
 								for _, file := range items {
 									if file.IsDir() {
 										if rmFlg.dir {
 											dirPath := filepath.Join(args[i], file.Name())
-											checkError(os.RemoveAll(dirPath))
-											if rmFlg.verbose {
-												fmt.Println(dirPath)
-											}
+											rmLib.delAll(dirPath)
 										}
 									} else {
 										filePath := filepath.Join(args[i], file.Name())
-										checkError(os.Remove(filePath))
-										if rmFlg.verbose {
-											fmt.Println(filePath)
-										}
+										rmLib.del(filePath)
 									}
 								}
 							} else {
@@ -90,10 +121,7 @@ var rmCmd = &cobra.Command{
 						}
 					}
 				} else {
-					checkError(os.Remove(args[i]))
-					if rmFlg.verbose {
-						fmt.Println(args[i])
-					}
+					rmLib.del(args[i])
 				}
 			} else {
 				fmt.Println(pathErr)
@@ -120,18 +148,4 @@ func init() {
 	rmCmd.Flags().BoolVarP(&rmFlg.recursive, "recursive", "r", false, "Equivalent to -R.")
 	rmCmd.Flags().BoolVarP(&rmFlg.verbose, "verbose", "v", false, "Be verbose when deleting files, showing them as they are removed.")
 	// rmCmd.Flags().BoolVarP(&rmFlg.whiteout, "whiteout", "W", false, "Attempt to undelete the named files and recover files covered by whiteouts.")
-}
-
-func isDirEmpty(name string) (bool, error) {
-	f, err := os.Open(name)
-	if err != nil {
-		return false, err
-	}
-	defer f.Close()
-
-	_, err = f.Readdirnames(1) // Or f.Readdir(1)
-	if err == io.EOF {
-		return true, nil
-	}
-	return false, err // Either not empty or error, suits both cases
 }
