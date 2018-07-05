@@ -7,7 +7,9 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -26,11 +28,11 @@ for confirmation.
 
 type rmFlag struct {
 	dir       bool
-	file      bool
+	force     bool
 	confirm   bool
 	overwrite bool
 	hierarchy bool
-	subdir    bool
+	recursive bool
 	verbose   bool
 	whiteout  bool
 }
@@ -48,37 +50,49 @@ var rmCmd = &cobra.Command{
 			path, pathErr := os.Stat(args[i])
 			if pathErr == nil {
 				if path.IsDir() {
-					/*if rmFlg.directories || rmFlg.files {
-						items, err := readDir(path)
-						if err != nil {
-							fmt.Println(err)
-							os.Exit(1)
+					if (rmFlg.hierarchy || rmFlg.recursive) && rmFlg.force {
+						checkError(os.RemoveAll(args[i]))
+						if rmFlg.verbose {
+							fmt.Println(args[i])
+						}
+					} else {
+						dirVoidStatus, dvsErr := isDirEmpty(args[i])
+						checkError(dvsErr)
+						if dirVoidStatus {
+							checkError(os.Remove(args[i]))
+							if rmFlg.verbose {
+								fmt.Println(args[i])
+							}
 						} else {
-							for _, file := range items {
-								if file.IsDir() {
-									isDir = "Dir"
-								} else {
-									if rmFlg.files {
-										fileErr := os.Remove(file)
-										if fileErr != nil {
-											fmt.Println(fileErr)
-											os.Exit(1)
+							if rmFlg.force {
+								items, itemErr := readDir(args[i])
+								checkError(itemErr)
+								for _, file := range items {
+									if file.IsDir() {
+										if rmFlg.dir {
+											dirPath := filepath.Join(args[i], file.Name())
+											checkError(os.RemoveAll(dirPath))
+											if rmFlg.verbose {
+												fmt.Println(dirPath)
+											}
+										}
+									} else {
+										filePath := filepath.Join(args[i], file.Name())
+										checkError(os.Remove(filePath))
+										if rmFlg.verbose {
+											fmt.Println(filePath)
 										}
 									}
 								}
+							} else {
+								fmt.Println(args[i], "is a non-empty directory.")
 							}
 						}
-					}*/
-					dirErr := os.RemoveAll(args[i])
-					if dirErr != nil {
-						fmt.Println(dirErr)
-						os.Exit(1)
 					}
 				} else {
-					fileErr := os.Remove(args[i])
-					if fileErr != nil {
-						fmt.Println(fileErr)
-						os.Exit(1)
+					checkError(os.Remove(args[i]))
+					if rmFlg.verbose {
+						fmt.Println(args[i])
 					}
 				}
 			} else {
@@ -99,11 +113,25 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command	is called directly, e.g.:
 	rmCmd.Flags().BoolVarP(&rmFlg.dir, "dir", "d", false, "Attempt to remove directories as well as other types of files.")
-	rmCmd.Flags().BoolVarP(&rmFlg.file, "file", "f", false, "Attempt to remove the files without prompting for confirmation, regardless of the file's permissions.")
-	rmCmd.Flags().BoolVarP(&rmFlg.confirm, "confirm", "i", false, "Request confirmation before attempting to remove each file, regardless of the file's permissions.")
-	rmCmd.Flags().BoolVarP(&rmFlg.overwrite, "overwrite", "P", false, "Overwrite regular files before deleting them.")
+	rmCmd.Flags().BoolVarP(&rmFlg.force, "force", "f", false, "Attempt to remove the files without prompting for confirmation, regardless of the file's permissions.")
+	// rmCmd.Flags().BoolVarP(&rmFlg.confirm, "confirm", "i", false, "Request confirmation before attempting to remove each file, regardless of the file's permissions.")
+	// rmCmd.Flags().BoolVarP(&rmFlg.overwrite, "overwrite", "P", false, "Overwrite regular files before deleting them.")
 	rmCmd.Flags().BoolVarP(&rmFlg.hierarchy, "hierarchy", "R", false, "Attempt to remove the file hierarchy rooted in each file argument.")
-	rmCmd.Flags().BoolVarP(&rmFlg.subdir, "subdir", "r", false, "Equivalent to -R.")
+	rmCmd.Flags().BoolVarP(&rmFlg.recursive, "recursive", "r", false, "Equivalent to -R.")
 	rmCmd.Flags().BoolVarP(&rmFlg.verbose, "verbose", "v", false, "Be verbose when deleting files, showing them as they are removed.")
-	rmCmd.Flags().BoolVarP(&rmFlg.whiteout, "whiteout", "W", false, "Attempt to undelete the named files and recover files covered by whiteouts.")
+	// rmCmd.Flags().BoolVarP(&rmFlg.whiteout, "whiteout", "W", false, "Attempt to undelete the named files and recover files covered by whiteouts.")
+}
+
+func isDirEmpty(name string) (bool, error) {
+	f, err := os.Open(name)
+	if err != nil {
+		return false, err
+	}
+	defer f.Close()
+
+	_, err = f.Readdirnames(1) // Or f.Readdir(1)
+	if err == io.EOF {
+		return true, nil
+	}
+	return false, err // Either not empty or error, suits both cases
 }

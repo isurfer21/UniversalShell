@@ -28,9 +28,9 @@ type unameFlag struct {
 	machine   bool
 	node      bool
 	processor bool
-	release   bool
-	system    bool
-	version   bool
+	osrelease   bool
+	osname    bool
+	osversion   bool
 }
 
 var unameFlg unameFlag
@@ -66,14 +66,14 @@ var unameCmd = &cobra.Command{
 		if unameFlg.processor {
 			fmt.Println("N/A")
 		}
-		if unameFlg.release {
+		if unameFlg.osrelease {
 			fmt.Println("N/A")
 		}
-		if unameFlg.version {
+		if unameFlg.osversion {
 			fmt.Println("N/A")
 		}
 
-		if unameFlg.system || (!unameFlg.all && !unameFlg.machine && !unameFlg.node && !unameFlg.processor && !unameFlg.release && !unameFlg.system && !unameFlg.version) {
+		if unameFlg.osname || (!unameFlg.all && !unameFlg.machine && !unameFlg.node && !unameFlg.processor && !unameFlg.osrelease && !unameFlg.osname && !unameFlg.osversion) {
 			fmt.Println(platform)
 		}
 	},
@@ -91,8 +91,8 @@ func init() {
 	unameCmd.Flags().BoolVarP(&unameFlg.all, "all", "a", false, "Behave as though all of the options were specified.")
 	unameCmd.Flags().BoolVarP(&unameFlg.machine, "machine", "m", false, "print the machine hardware name.")
 	unameCmd.Flags().BoolVarP(&unameFlg.node, "node", "n", false, "print the nodename (the system is known by to a communications network).")
-	unameCmd.Flags().BoolVarP(&unameFlg.processor, "processor", "p", false, "print the machine processor architecture name.")
-	unameCmd.Flags().BoolVarP(&unameFlg.release, "release", "r", false, "print the operating system release.")
-	unameCmd.Flags().BoolVarP(&unameFlg.system, "system", "s", false, "print the operating system name.")
-	unameCmd.Flags().BoolVarP(&unameFlg.version, "version", "v", false, "print the operating system version.")
+	// unameCmd.Flags().BoolVarP(&unameFlg.processor, "processor", "p", false, "print the machine processor architecture name.")
+	// unameCmd.Flags().BoolVarP(&unameFlg.osrelease, "osrelease", "r", false, "print the operating system release.")
+	unameCmd.Flags().BoolVarP(&unameFlg.osname, "osname", "s", false, "print the operating system name.")
+	// unameCmd.Flags().BoolVarP(&unameFlg.osversion, "osversion", "v", false, "print the operating system version.")
 }
