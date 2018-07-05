@@ -44,6 +44,7 @@ To create a cross-platform application as a portable executable that could run b
  - [ ] grep
  - [ ] head
  - [x] help
+ - [x] homedir
  - [ ] ln
  - [x] ls
  - [x] mkdir
@@ -56,7 +57,7 @@ To create a cross-platform application as a portable executable that could run b
  - [ ] set
  - [ ] sort
  - [ ] tail
- - [ ] tmpdir
+ - [x] tmpdir
  - [ ] test
  - [x] touch
  - [ ] uniq

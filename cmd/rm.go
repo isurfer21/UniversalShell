@@ -25,6 +25,14 @@ for confirmation.
 )
 
 type rmFlag struct {
+	dir       bool
+	file      bool
+	confirm   bool
+	overwrite bool
+	hierarchy bool
+	subdir    bool
+	verbose   bool
+	whiteout  bool
 }
 
 var rmFlg rmFlag
@@ -40,6 +48,27 @@ var rmCmd = &cobra.Command{
 			path, pathErr := os.Stat(args[i])
 			if pathErr == nil {
 				if path.IsDir() {
+					/*if rmFlg.directories || rmFlg.files {
+						items, err := readDir(path)
+						if err != nil {
+							fmt.Println(err)
+							os.Exit(1)
+						} else {
+							for _, file := range items {
+								if file.IsDir() {
+									isDir = "Dir"
+								} else {
+									if rmFlg.files {
+										fileErr := os.Remove(file)
+										if fileErr != nil {
+											fmt.Println(fileErr)
+											os.Exit(1)
+										}
+									}
+								}
+							}
+						}
+					}*/
 					dirErr := os.RemoveAll(args[i])
 					if dirErr != nil {
 						fmt.Println(dirErr)
@@ -69,5 +98,12 @@ func init() {
 	// rmCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command	is called directly, e.g.:
-	// rmCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rmCmd.Flags().BoolVarP(&rmFlg.dir, "dir", "d", false, "Attempt to remove directories as well as other types of files.")
+	rmCmd.Flags().BoolVarP(&rmFlg.file, "file", "f", false, "Attempt to remove the files without prompting for confirmation, regardless of the file's permissions.")
+	rmCmd.Flags().BoolVarP(&rmFlg.confirm, "confirm", "i", false, "Request confirmation before attempting to remove each file, regardless of the file's permissions.")
+	rmCmd.Flags().BoolVarP(&rmFlg.overwrite, "overwrite", "P", false, "Overwrite regular files before deleting them.")
+	rmCmd.Flags().BoolVarP(&rmFlg.hierarchy, "hierarchy", "R", false, "Attempt to remove the file hierarchy rooted in each file argument.")
+	rmCmd.Flags().BoolVarP(&rmFlg.subdir, "subdir", "r", false, "Equivalent to -R.")
+	rmCmd.Flags().BoolVarP(&rmFlg.verbose, "verbose", "v", false, "Be verbose when deleting files, showing them as they are removed.")
+	rmCmd.Flags().BoolVarP(&rmFlg.whiteout, "whiteout", "W", false, "Attempt to undelete the named files and recover files covered by whiteouts.")
 }
