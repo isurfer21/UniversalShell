@@ -66,6 +66,34 @@ func (rm *RmLib) del(path string) {
 	rm.logVerbose(path)
 }
 
+func (rm *RmLib) delHierarchy(path string) {
+	dirVoid, dirVoidErr := rm.isDirEmpty(path)
+	rm.handleError(dirVoidErr)
+	if dirVoid {
+		rm.del(path)
+	} else {
+		if rmFlg.force {
+			items, itemErr := readDir(path)
+			rm.handleError(itemErr)
+			for _, item := range items {
+				if item.IsDir() {
+					dirPath := filepath.Join(path, item.Name())
+					if rmFlg.dir {
+						rm.delAll(dirPath)
+					} else if rmFlg.hierarchy {
+						rm.delHierarchy(dirPath)
+						// todo: rm.del(dirPath)
+					}
+				} else {
+					rm.del(filepath.Join(path, item.Name()))
+				}
+			}
+		} else {
+			fmt.Println(path, "is a non-empty directory.")
+		}
+	}
+}
+
 type RmFlag struct {
 	dir       bool
 	force     bool
@@ -91,41 +119,15 @@ var rmCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		for i := 0; i < len(args); i++ {
 			path, pathErr := os.Stat(args[i])
-			if pathErr == nil {
-				if path.IsDir() {
-					if (rmFlg.hierarchy || rmFlg.recursive) && rmFlg.force {
-						rmLib.delAll(args[i])
-					} else {
-						dirVoidStatus, dvsErr := rmLib.isDirEmpty(args[i])
-						rmLib.handleError(dvsErr)
-						if dirVoidStatus {
-							rmLib.del(args[i])
-						} else {
-							if rmFlg.force {
-								items, itemErr := readDir(args[i])
-								rmLib.handleError(itemErr)
-								for _, file := range items {
-									if file.IsDir() {
-										if rmFlg.dir {
-											dirPath := filepath.Join(args[i], file.Name())
-											rmLib.delAll(dirPath)
-										}
-									} else {
-										filePath := filepath.Join(args[i], file.Name())
-										rmLib.del(filePath)
-									}
-								}
-							} else {
-								fmt.Println(args[i], "is a non-empty directory.")
-							}
-						}
-					}
+			rmLib.handleError(pathErr)
+			if path.IsDir() {
+				if rmFlg.recursive && rmFlg.force {
+					rmLib.delAll(args[i])
 				} else {
-					rmLib.del(args[i])
+					rmLib.delHierarchy(args[i])
 				}
 			} else {
-				fmt.Println(pathErr)
-				os.Exit(1)
+				rmLib.del(args[i])
 			}
 		}
 	},
