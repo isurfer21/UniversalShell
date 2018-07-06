@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"../lib"
 	"github.com/spf13/cobra"
 )
 
@@ -24,6 +25,7 @@ line. If the permissions of the file do not permit writing, and the standard
 input device is a terminal, the user is prompted (on the standard error output) 
 for confirmation.
 `
+	i18nRmCmdConfirmationMsg = "Delete %s \nAre you sure? (yes/no) "
 )
 
 type RmLib struct {
@@ -50,10 +52,31 @@ func (rm *RmLib) isDirEmpty(name string) (bool, error) {
 	return false, err // Either not empty or error, suits both cases
 }
 
+func (rm *RmLib) readDir(dirname string) ([]os.FileInfo, error) {
+	f, err := os.Open(dirname)
+	if err != nil {
+		return nil, err
+	}
+	list, err := f.Readdir(-1)
+	f.Close()
+	if err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
 func (rm *RmLib) logVerbose(s string) {
 	if rmFlg.verbose {
 		fmt.Println(s)
 	}
+}
+
+func (rm *RmLib) isWritable(s string) {
+	writable := false
+	if info.Mode().Perm()&(1<<(uint(7))) == 0 {
+		writable = true
+	}
+	return writable
 }
 
 func (rm *RmLib) delAll(path string) {
@@ -62,31 +85,37 @@ func (rm *RmLib) delAll(path string) {
 }
 
 func (rm *RmLib) del(path string) {
-	rm.handleError(os.Remove(path))
-	rm.logVerbose(path)
+	if rmFlg.interactive {
+		fmt.Printf(i18nRmCmdConfirmationMsg, path)
+		if askForConfirmation() {
+			rm.handleError(os.Remove(path))
+			rm.logVerbose(path)
+		}
+	} else {
+		rm.handleError(os.Remove(path))
+		rm.logVerbose(path)
+	}
 }
 
-func (rm *RmLib) delHierarchy(path string) {
-	dirVoid, dirVoidErr := rm.isDirEmpty(path)
-	rm.handleError(dirVoidErr)
-	if dirVoid {
+func (rm *RmLib) delFile(path string) {
+	if rm.isWritable(path) || rmFlg.force {
 		rm.del(path)
 	} else {
-		if rmFlg.force {
-			items, itemErr := readDir(path)
-			rm.handleError(itemErr)
-			for _, item := range items {
-				if item.IsDir() {
-					dirPath := filepath.Join(path, item.Name())
-					if rmFlg.dir {
-						rm.delAll(dirPath)
-					} else if rmFlg.hierarchy {
-						rm.delHierarchy(dirPath)
-						// todo: rm.del(dirPath)
-					}
-				} else {
-					rm.del(filepath.Join(path, item.Name()))
-				}
+		rm.logVerbose("Permission denied to delete", path)
+	}
+}
+
+func (rm *RmLib) delFolder(path string) {
+	vacant, err := rm.isDirEmpty(path)
+	rm.handleError(err)
+	if vacant {
+		rm.del(path)
+	} else {
+		if rmFlg.Recursive || rmFlg.recursive {
+			if rmFlg.force {
+				rm.delAll(path)
+			} else {
+				rm.delContent(path)
 			}
 		} else {
 			fmt.Println(path, "is a non-empty directory.")
@@ -94,15 +123,24 @@ func (rm *RmLib) delHierarchy(path string) {
 	}
 }
 
+func (rm *RmLib) delContent(path string) {
+	items, err := rm.readDir(path)
+	rm.handleError(err)
+	for _, item := range items {
+		if item.IsDir() {
+			rm.delFolder(filepath.Join(path, item.Name()))
+		} else {
+			rm.delFile(filepath.Join(path, item.Name()))
+		}
+	}
+}
+
 type RmFlag struct {
-	dir       bool
-	force     bool
-	confirm   bool
-	overwrite bool
-	hierarchy bool
-	recursive bool
-	verbose   bool
-	whiteout  bool
+	force       bool
+	interactive bool
+	Recursive   bool
+	recursive   bool
+	verbose     bool
 }
 
 var (
@@ -121,13 +159,9 @@ var rmCmd = &cobra.Command{
 			path, pathErr := os.Stat(args[i])
 			rmLib.handleError(pathErr)
 			if path.IsDir() {
-				if rmFlg.recursive && rmFlg.force {
-					rmLib.delAll(args[i])
-				} else {
-					rmLib.delHierarchy(args[i])
-				}
+				rmLib.delFolder(args[i])
 			} else {
-				rmLib.del(args[i])
+				rmLib.delFile(args[i])
 			}
 		}
 	},
@@ -142,12 +176,9 @@ func init() {
 	// rmCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command	is called directly, e.g.:
-	rmCmd.Flags().BoolVarP(&rmFlg.dir, "dir", "d", false, "Attempt to remove directories as well as other types of files.")
-	rmCmd.Flags().BoolVarP(&rmFlg.force, "force", "f", false, "Attempt to remove the files without prompting for confirmation, regardless of the file's permissions.")
-	// rmCmd.Flags().BoolVarP(&rmFlg.confirm, "confirm", "i", false, "Request confirmation before attempting to remove each file, regardless of the file's permissions.")
-	// rmCmd.Flags().BoolVarP(&rmFlg.overwrite, "overwrite", "P", false, "Overwrite regular files before deleting them.")
-	rmCmd.Flags().BoolVarP(&rmFlg.hierarchy, "hierarchy", "R", false, "Attempt to remove the file hierarchy rooted in each file argument.")
-	rmCmd.Flags().BoolVarP(&rmFlg.recursive, "recursive", "r", false, "Equivalent to -R.")
-	rmCmd.Flags().BoolVarP(&rmFlg.verbose, "verbose", "v", false, "Be verbose when deleting files, showing them as they are removed.")
-	// rmCmd.Flags().BoolVarP(&rmFlg.whiteout, "whiteout", "W", false, "Attempt to undelete the named files and recover files covered by whiteouts.")
+	rmCmd.Flags().BoolVarP(&rmFlg.force, "force", "f", false, "ignore nonexistent files and arguments, never prompt")
+	rmCmd.Flags().BoolVarP(&rmFlg.interactive, "interactive", "i", false, "prompt before every removal")
+	rmCmd.Flags().BoolVarP(&rmFlg.Recursive, "Recursive", "R", false, "remove directories and their contents recursively")
+	rmCmd.Flags().BoolVarP(&rmFlg.recursive, "recursive", "r", false, "equivalent to -R.")
+	rmCmd.Flags().BoolVarP(&rmFlg.verbose, "verbose", "v", false, "explain what is being done")
 }
