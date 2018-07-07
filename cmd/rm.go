@@ -10,8 +10,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"../lib"
 	"github.com/spf13/cobra"
+
+	"../lib"
 )
 
 const (

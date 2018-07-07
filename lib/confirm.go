@@ -1,3 +1,8 @@
+/*
+Copyright © 2018 Abhishek Kumar <isurfer21@gmail.com>
+This work is licensed under the 'MIT License'.
+*/
+
 package lib
 
 import (
@@ -8,11 +13,13 @@ import (
 type Confirm struct {
 }
 
-// askForConfirmation uses Scanln to parse user input. A user must type in "yes" or "no" and
-// then press enter. It has fuzzy matching, so "y", "Y", "yes", "YES", and "Yes" all count as
-// confirmations. If the input is not recognized, it will ask again. The function does not return
-// until it gets a valid response from the user. Typically, you should use fmt to print out a question
-// before calling askForConfirmation. E.g. fmt.Println("WARNING: Are you sure? (yes/no)")
+/*
+askForConfirmation uses Scanln to parse user input. A user must type in "yes" or "no" and
+then press enter. It has fuzzy matching, so "y", "Y", "yes", "YES", and "Yes" all count as
+confirmations. If the input is not recognized, it will ask again. The function does not return
+until it gets a valid response from the user. Typically, you should use fmt to print out a question
+before calling askForConfirmation. E.g. fmt.Println("WARNING: Are you sure? (yes/no)")
+*/
 func (c *Confirm) AskForConfirmation() bool {
 	var response string
 	_, err := fmt.Scanln(&response)
@@ -33,8 +40,7 @@ func (c *Confirm) AskForConfirmation() bool {
 
 // You might want to put the following two functions in a separate utility package.
 
-// posString returns the first index of element in slice.
-// If slice does not contain element, returns -1.
+// posString returns the first index of element in slice. If slice does not contain element, returns -1.
 func (c *Confirm) posString(slice []string, element string) int {
 	for index, elem := range slice {
 		if elem == element {

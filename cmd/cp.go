@@ -7,10 +7,11 @@ package cmd
 
 import (
 	"fmt"
-	"io"
 	"os"
 
 	"github.com/spf13/cobra"
+
+	"../lib"
 )
 
 const (
@@ -27,10 +28,35 @@ the source file.
 `
 )
 
+type CpLib struct {
+	dossier lib.Dossier
+	folder  lib.Folder
+}
+
+func (cp *CpLib) handleError(err error) {
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+func (cp *CpLib) copy(src string, dest string) {
+	path, err := os.Stat(src)
+	cp.handleError(err)
+	if path.IsDir() {
+		cp.handleError(cp.folder.CopyDir(src, dest))
+	} else {
+		cp.handleError(cp.dossier.CopyFile(src, dest))
+	}
+}
+
 type cpFlag struct {
 }
 
-var cpFlg cpFlag
+var (
+	cpFlg cpFlag
+	cpLib CpLib
+)
 
 // cpCmd represents the cp command
 var cpCmd = &cobra.Command{
@@ -40,11 +66,7 @@ var cpCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 2 {
-			err := copyFile(args[0], args[1])
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
+			cpLib.copy(args[0], args[1])
 		}
 	},
 }
@@ -59,56 +81,4 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command is called directly, e.g.:
 	// cpCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-}
-
-func copyFile(src, dst string) (err error) {
-	sfi, err := os.Stat(src)
-	if err != nil {
-		return
-	}
-	if !sfi.Mode().IsRegular() {
-		// cannot copy non-regular files (e.g., directories, symlinks, devices, etc.)
-		return fmt.Errorf("cp: non-regular source file %s (%q)", sfi.Name(), sfi.Mode().String())
-	}
-	dfi, err := os.Stat(dst)
-	if err != nil {
-		if !os.IsNotExist(err) {
-			return
-		}
-	} else {
-		if !(dfi.Mode().IsRegular()) {
-			return fmt.Errorf("cp: non-regular destination file %s (%q)", dfi.Name(), dfi.Mode().String())
-		}
-		if os.SameFile(sfi, dfi) {
-			return
-		}
-	}
-	if err = os.Link(src, dst); err == nil {
-		return
-	}
-	err = copyFileContents(src, dst)
-	return
-}
-
-func copyFileContents(src, dst string) (err error) {
-	in, err := os.Open(src)
-	if err != nil {
-		return
-	}
-	defer in.Close()
-	out, err := os.Create(dst)
-	if err != nil {
-		return
-	}
-	defer func() {
-		cerr := out.Close()
-		if err == nil {
-			err = cerr
-		}
-	}()
-	if _, err = io.Copy(out, in); err != nil {
-		return
-	}
-	err = out.Sync()
-	return
 }

@@ -28,9 +28,9 @@ type unameFlag struct {
 	machine   bool
 	node      bool
 	processor bool
-	osrelease   bool
+	osrelease bool
 	osname    bool
-	osversion   bool
+	osversion bool
 }
 
 var unameFlg unameFlag
@@ -88,7 +88,7 @@ func init() {
 	// unameCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command is called directly, e.g.:
-	unameCmd.Flags().BoolVarP(&unameFlg.all, "all", "a", false, "Behave as though all of the options were specified.")
+	unameCmd.Flags().BoolVarP(&unameFlg.all, "all", "a", false, "behave as though all of the options were specified.")
 	unameCmd.Flags().BoolVarP(&unameFlg.machine, "machine", "m", false, "print the machine hardware name.")
 	unameCmd.Flags().BoolVarP(&unameFlg.node, "node", "n", false, "print the nodename (the system is known by to a communications network).")
 	// unameCmd.Flags().BoolVarP(&unameFlg.processor, "processor", "p", false, "print the machine processor architecture name.")
