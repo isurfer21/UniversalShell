@@ -24,9 +24,9 @@ line. If the permissions of the file do not permit writing, and the standard
 input device is a terminal, the user is prompted (on the standard error output) 
 for confirmation.
 `
-	i18nRmCmdConfirmationMsg = "Delete %s \nAre you sure? (yes/no) "
-	i18nRmCmdPermDeniedToDel = "Permission denied to delete "
-	i18nRmCmdIsNonEmptyDir   = "%s is a non-empty directory.\n"
+	i18nRmTplConfirmationMsg = "Delete %s \nAre you sure? (yes/no) "
+	i18nRmTplPermDeniedToDel = "Permission denied to delete "
+	i18nRmTplIsNonEmptyDir   = "%s is a non-empty directory.\n"
 )
 
 type RmLib struct {
@@ -55,7 +55,7 @@ func (rm *RmLib) delAll(path string) {
 
 func (rm *RmLib) del(path string) {
 	if rmFlg.interactive {
-		fmt.Printf(i18nRmCmdConfirmationMsg, path)
+		fmt.Printf(i18nRmTplConfirmationMsg, path)
 		if rm.evoke.AskForConfirmation() {
 			rm.handleError(os.Remove(path))
 			rm.logVerbose(path)
@@ -72,7 +72,7 @@ func (rm *RmLib) delFile(path string) {
 	if writable || rmFlg.force {
 		rm.del(path)
 	} else {
-		rm.logVerbose(i18nRmCmdPermDeniedToDel + path)
+		rm.logVerbose(i18nRmTplPermDeniedToDel + path)
 	}
 }
 
@@ -89,7 +89,7 @@ func (rm *RmLib) delFolder(path string) {
 				rm.delContent(path)
 			}
 		} else {
-			fmt.Printf(i18nRmCmdIsNonEmptyDir, path)
+			fmt.Printf(i18nRmTplIsNonEmptyDir, path)
 		}
 	}
 }
