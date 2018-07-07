@@ -7,7 +7,6 @@ package cmd
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 
@@ -26,9 +25,14 @@ input device is a terminal, the user is prompted (on the standard error output)
 for confirmation.
 `
 	i18nRmCmdConfirmationMsg = "Delete %s \nAre you sure? (yes/no) "
+	i18nRmCmdPermDeniedToDel = "Permission denied to delete "
+	i18nRmCmdIsNonEmptyDir   = "%s is a non-empty directory.\n"
 )
 
 type RmLib struct {
+	evoke   lib.Confirm
+	dossier lib.Dossier
+	folder  lib.Folder
 }
 
 func (rm *RmLib) handleError(err error) {
@@ -38,45 +42,10 @@ func (rm *RmLib) handleError(err error) {
 	}
 }
 
-func (rm *RmLib) isDirEmpty(name string) (bool, error) {
-	f, err := os.Open(name)
-	if err != nil {
-		return false, err
-	}
-	defer f.Close()
-
-	_, err = f.Readdirnames(1) // Or f.Readdir(1)
-	if err == io.EOF {
-		return true, nil
-	}
-	return false, err // Either not empty or error, suits both cases
-}
-
-func (rm *RmLib) readDir(dirname string) ([]os.FileInfo, error) {
-	f, err := os.Open(dirname)
-	if err != nil {
-		return nil, err
-	}
-	list, err := f.Readdir(-1)
-	f.Close()
-	if err != nil {
-		return nil, err
-	}
-	return list, nil
-}
-
 func (rm *RmLib) logVerbose(s string) {
 	if rmFlg.verbose {
 		fmt.Println(s)
 	}
-}
-
-func (rm *RmLib) isWritable(s string) {
-	writable := false
-	if info.Mode().Perm()&(1<<(uint(7))) == 0 {
-		writable = true
-	}
-	return writable
 }
 
 func (rm *RmLib) delAll(path string) {
@@ -87,7 +56,7 @@ func (rm *RmLib) delAll(path string) {
 func (rm *RmLib) del(path string) {
 	if rmFlg.interactive {
 		fmt.Printf(i18nRmCmdConfirmationMsg, path)
-		if askForConfirmation() {
+		if rm.evoke.AskForConfirmation() {
 			rm.handleError(os.Remove(path))
 			rm.logVerbose(path)
 		}
@@ -98,15 +67,17 @@ func (rm *RmLib) del(path string) {
 }
 
 func (rm *RmLib) delFile(path string) {
-	if rm.isWritable(path) || rmFlg.force {
+	writable, err := rm.dossier.IsWritable(path)
+	rm.handleError(err)
+	if writable || rmFlg.force {
 		rm.del(path)
 	} else {
-		rm.logVerbose("Permission denied to delete", path)
+		rm.logVerbose(i18nRmCmdPermDeniedToDel + path)
 	}
 }
 
 func (rm *RmLib) delFolder(path string) {
-	vacant, err := rm.isDirEmpty(path)
+	vacant, err := rm.folder.IsDirEmpty(path)
 	rm.handleError(err)
 	if vacant {
 		rm.del(path)
@@ -118,13 +89,13 @@ func (rm *RmLib) delFolder(path string) {
 				rm.delContent(path)
 			}
 		} else {
-			fmt.Println(path, "is a non-empty directory.")
+			fmt.Printf(i18nRmCmdIsNonEmptyDir, path)
 		}
 	}
 }
 
 func (rm *RmLib) delContent(path string) {
-	items, err := rm.readDir(path)
+	items, err := rm.folder.ReadDir(path)
 	rm.handleError(err)
 	for _, item := range items {
 		if item.IsDir() {
