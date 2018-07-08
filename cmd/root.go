@@ -61,6 +61,16 @@ Copyright (c) %s Abhishek Kumar
 `
 )
 
+type RootLib struct {
+}
+
+func (root *RootLib) handleError(err error) {
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
 type rootFlag struct {
 	version bool
 	license bool
@@ -70,6 +80,7 @@ var (
 	dye        color.Color
 	configFile string
 	rootFlg    rootFlag
+	rootLib    RootLib
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -114,7 +125,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	// Here you will define your flags and configuration settings. Cobra supports persistent flags, which, if defined here, will be global for your application.
-	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", "config file (default is $HOME/.ush.yaml)")
+	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", "config file (default is $HOME/.ush.toml)")
 
 	// Cobra also supports local flags, which will only run when this action is called directly.
 	rootCmd.Flags().BoolVarP(&rootFlg.version, "version", "v", false, "show version number and exit")
@@ -129,10 +140,7 @@ func initConfig() {
 	} else {
 		// Find home directory.
 		home, err := homedir.Dir()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+		rootLib.handleError(err)
 
 		// Search config in home directory with name ".ush" (without extension).
 		viper.AddConfigPath(home)
@@ -142,14 +150,5 @@ func initConfig() {
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
-	}
-}
-
-func checkError(err error) {
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	rootLib.handleError(viper.ReadInConfig())
 }

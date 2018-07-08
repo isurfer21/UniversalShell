@@ -75,6 +75,16 @@ To create a cross-platform application as a portable executable that could run b
 ##### On Windows
  - Terminal error message shows unformatted characters instead of coloured string. So I would recommend to use light-weight *ConEmu* app in place of default *command-prompt*.
 
+### Using ```ush``` for the first-time
+It will ask to create confile file as shown below
+```
+$ ./ush
+Config File ".ush" Not Found in "[/Users/abhishekkumar]"
+```
+So, you need to create a blank file named ```.ush.yml``` (or with any other extension out of *yaml*, *json*, *toml* or *hcl*) at *HOME* directory. 
+
+Please refer [Wiki: Home directory](https://en.wikipedia.org/wiki/Home_directory) to know more about it based on your operating system.
+
 ### Sample usage
 
 ##### Command: pwd

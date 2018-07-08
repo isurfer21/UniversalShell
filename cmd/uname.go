@@ -23,6 +23,16 @@ standard output.
 `
 )
 
+type UnameLib struct {
+}
+
+func (uname *UnameLib) handleError(err error) {
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
 type unameFlag struct {
 	all       bool
 	machine   bool
@@ -33,7 +43,10 @@ type unameFlag struct {
 	osversion bool
 }
 
-var unameFlg unameFlag
+var (
+	unameFlg unameFlag
+	unameLib UnameLib
+)
 
 // unameCmd represents the uname command
 var unameCmd = &cobra.Command{
@@ -52,7 +65,7 @@ var unameCmd = &cobra.Command{
 		platform := runtime.GOOS
 
 		hostname, err := os.Hostname()
-		checkError(err)
+		unameLib.handleError(err)
 
 		if unameFlg.all {
 			fmt.Println(platform, hostname, macArch)
