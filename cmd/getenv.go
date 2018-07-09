@@ -7,7 +7,6 @@ package cmd
 
 import (
 	"fmt"
-	// "os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -30,7 +29,6 @@ var getenvCmd = &cobra.Command{
 	Long:  i18nGetenvCmdDetail,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		// fmt.Println(os.Getenv(args[0]))
 		fmt.Println(viper.GetString(args[0]))
 	},
 }
