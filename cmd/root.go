@@ -71,6 +71,12 @@ func (root *RootLib) handleError(err error) {
 	}
 }
 
+func (root *RootLib) catchError(err error) {
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
 type rootFlag struct {
 	version bool
 	license bool
@@ -125,7 +131,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	// Here you will define your flags and configuration settings. Cobra supports persistent flags, which, if defined here, will be global for your application.
-	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", "config file (default is $HOME/.ush.toml)")
+	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", "config file (default is $HOME/.ush.prop)")
 
 	// Cobra also supports local flags, which will only run when this action is called directly.
 	rootCmd.Flags().BoolVarP(&rootFlg.version, "version", "v", false, "show version number and exit")
@@ -150,5 +156,5 @@ func initConfig() {
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
-	rootLib.handleError(viper.ReadInConfig())
+	rootLib.catchError(viper.ReadInConfig())
 }

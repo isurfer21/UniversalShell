@@ -40,7 +40,9 @@ To create a cross-platform application as a portable executable that could run b
  - [x] echo
  - [ ] error
  - [x] exec
+ - [x] export
  - [ ] find
+ - [x] getenv
  - [ ] grep
  - [ ] head
  - [x] help
@@ -50,11 +52,13 @@ To create a cross-platform application as a portable executable that could run b
  - [x] mkdir
  - [x] mv
  - [ ] popd
+ - [x] printenv
  - [ ] pushd
  - [x] pwd
  - [x] rm
  - [ ] sed
  - [ ] set
+ - [x] setenv
  - [ ] sort
  - [ ] tail
  - [x] tmpdir
@@ -62,6 +66,7 @@ To create a cross-platform application as a portable executable that could run b
  - [x] touch
  - [ ] uniq
  - [x] uname
+ - [x] unsetenv
  - [x] which
 
 ### References
@@ -75,15 +80,23 @@ To create a cross-platform application as a portable executable that could run b
 ##### On Windows
  - Terminal error message shows unformatted characters instead of coloured string. So I would recommend to use light-weight *ConEmu* app in place of default *command-prompt*.
 
-### Using ```ush``` for the first-time
-It will ask to create confile file as shown below
+### Setup global config file for ```ush```
+By default **ush** expects it's config file at HOME directory; otherwise on every command execution, it will show an error message like this
 ```
-$ ./ush
+$ ush
 Config File ".ush" Not Found in "[/Users/abhishekkumar]"
 ```
-So, you need to create a blank file named ```.ush.yml``` (or with any other extension out of *yaml*, *json*, *toml* or *hcl*) at *HOME* directory. 
 
-Please refer [Wiki: Home directory](https://en.wikipedia.org/wiki/Home_directory) to know more about it based on your operating system.
+So, you can create it's config file using following command
+```
+$ ush touch ~/.ush.yml
+```
+
+It would create a blank file named ```.ush.yml``` at *HOME* directory. If the path would be correct, then it won't show the error message again.
+
+Also, you can choose the format of this config file by changing the extension to any other extension. The supported formats are "json", "toml", "yaml", "yml", "properties", "props", "prop", "hcl".
+
+Please refer [Wiki: Home directory](https://en.wikipedia.org/wiki/Home_directory) to know more about it, based on your operating system.
 
 ### Sample usage
 

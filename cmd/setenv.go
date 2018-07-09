@@ -40,14 +40,6 @@ func (setenv *SetenvLib) handleError(err error) {
 	}
 }
 
-func (setenv *SetenvLib) isKVPair(ev string) bool {
-	if strings.Index(ev, "=") >= 0 {
-		return true
-	} else {
-		return false
-	}
-}
-
 func (setenv *SetenvLib) getWay(key string) string {
 	_, ok := os.LookupEnv(key)
 	if !ok {
@@ -66,23 +58,6 @@ func (setenv *SetenvLib) isConfirmed(way string, key string) bool {
 	}
 }
 
-func (setenv *SetenvLib) setKVPair(ev string) error {
-	if setenv.isKVPair(ev) {
-		pair := strings.Split(ev, "=")
-		setenv.handleError(os.Setenv(pair[0], pair[1]))
-		return nil
-	}
-	return fmt.Errorf(i18nSetenvTplInvalidKVPair, ev)
-}
-
-func (setenv *SetenvLib) getKey(ev string) (string, error) {
-	if setenv.isKVPair(ev) {
-		pair := strings.Split(ev, "=")
-		return pair[0], nil
-	}
-	return "", fmt.Errorf(i18nSetenvTplInvalidKVPair, ev)
-}
-
 type setenvFlag struct {
 	interactive bool
 }
@@ -97,39 +72,22 @@ var setenvCmd = &cobra.Command{
 	Use:   "setenv",
 	Short: i18nSetenvCmdTitle,
 	Long:  i18nSetenvCmdDetail,
-	Args:  cobra.RangeArgs(1, 2),
+	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		switch len(args) {
-		case 1:
-			pair := args[0]
-			if setenvFlg.interactive {
-				key, err := setenvLib.getKey(pair)
-				setenvLib.handleError(err)
-				way := setenvLib.getWay(key)
-				if setenvLib.isConfirmed(way, key) {
-					setenvLib.handleError(setenvLib.setKVPair(pair))
-				} else {
-					fmt.Printf(i18nSetenvTplPermDenied, strings.ToLower(way), key)
-				}
-			} else {
-				setenvLib.handleError(setenvLib.setKVPair(pair))
-			}
-			break
-		case 2:
+		if len(args) == 2 {
 			key, val := args[0], args[1]
 			if setenvFlg.interactive {
 				way := setenvLib.getWay(key)
 				if setenvLib.isConfirmed(way, key) {
-					setenvLib.handleError(os.Setenv(key, val))
+					viper.Set(key, val)
+					viper.WriteConfig()
 				} else {
 					fmt.Printf(i18nSetenvTplPermDenied, strings.ToLower(way), key)
 				}
 			} else {
-				// setenvLib.handleError(os.Setenv(key, val))
 				viper.Set(key, val)
 				viper.WriteConfig()
 			}
-			break
 		}
 	},
 }

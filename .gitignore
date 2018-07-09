@@ -2,3 +2,4 @@ UniversalShell
 ush
 *.exe
 testdata/
+.DS_Store
