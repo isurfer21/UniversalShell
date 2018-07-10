@@ -3,3 +3,4 @@ ush
 *.exe
 testdata/
 .DS_Store
+bin/
