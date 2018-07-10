@@ -9,7 +9,7 @@ function sh(command)
 end
 
 function ush(command)
-	local handle = io.popen('./ush ' .. command)
+	local handle = io.popen('ush ' .. command)
 	local result = handle:read('*a')
 	handle:close()
 	return result
