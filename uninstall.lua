@@ -73,15 +73,26 @@ print(sh('go clean -i ' .. pkg))
 print('Delete the source directory and compiled package directory(ies)')
 local GOPATH = trim(ush('getenv GOPATH'))
 
-print('Deleting package source')
-print(trim(ush(string.format('rm -v -r -f "%s/src/%s/"', GOPATH, pkg))))
-print('Deleting package source container, if empty')
-print(trim(ush(string.format('rm -v "%s/src/%s"', GOPATH, parent(pkg)))))
+if (trim(ush(string.format('ls -e "%s/src/%s/"', GOPATH, pkg))) == 'true') then
+	print('Deleting package source')
+	print(trim(ush(string.format('rm -v -r -f "%s/src/%s/"', GOPATH, pkg))))
+	print('Deleting package source container, if empty')
+	print(trim(ush(string.format('rm -v "%s/src/%s"', GOPATH, parent(pkg)))))
+end 
 
 if (trim(ush('uname -m')) == 'x86_64') then
     local ost = trim(ush('uname')) .. '_amd64'
-	print('Deleting package objects')
-	print(trim(ush(string.format('rm -v -r -f "%s/pkg/%s/%s/"', GOPATH, ost, pkg))))
-	print('Deleting package objects container, if empty')
-	print(trim(ush(string.format('rm -v "%s/pkg/%s/%s"', GOPATH, ost, parent(pkg)))))
+	if (trim(ush(string.format('ls -e "%s/pkg/%s/%s/"', GOPATH, ost, pkg))) == 'true') then
+		print('Deleting package objects')
+		print(trim(ush(string.format('rm -v -r -f "%s/pkg/%s/%s/"', GOPATH, ost, pkg))))
+		print('Deleting package objects container, if empty')
+		print(trim(ush(string.format('rm -v "%s/pkg/%s/%s"', GOPATH, ost, parent(pkg)))))
+	end 
 end
+
+print('Delete package binary')
+local ext = ''
+if (trim(ush('uname')) == 'windows') then 
+	ext = '.exe'
+end
+print(trim(ush(string.format('rm -v -f "%s/bin/ush%s"', GOPATH, ext))))

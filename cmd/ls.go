@@ -115,11 +115,19 @@ func (ls *LsLib) dir(location string) string {
 	return strings.Join(list[:], separator)
 }
 
+func (ls *LsLib) exist(location string) bool {
+	if _, err := os.Stat(location); os.IsNotExist(err) {
+		return false
+	}
+	return true
+}
+
 type lsFlag struct {
 	horizontal bool
 	vertical   bool
 	tabulated  bool
 	raw        bool
+	exist      bool
 }
 
 var (
@@ -143,7 +151,13 @@ var lsCmd = &cobra.Command{
 			if len(args) > 0 {
 				location = args[0]
 			}
-			fmt.Printf("%s\n", lsLib.dir(location))
+			var out string
+			if lsFlg.exist {
+				out = strconv.FormatBool(lsLib.exist(location))
+			} else {
+				out = lsLib.dir(location)
+			}
+			fmt.Printf("%s\n", out)
 		}
 	},
 }
@@ -156,4 +170,5 @@ func init() {
 	lsCmd.Flags().BoolVarP(&lsFlg.vertical, "vert", "y", false, "display the list vertically")
 	lsCmd.Flags().BoolVarP(&lsFlg.tabulated, "long", "l", false, "display extended file metadata as a table")
 	lsCmd.Flags().BoolVarP(&lsFlg.raw, "raw", "r", false, "display raw extended file metadata as a table")
+	lsCmd.Flags().BoolVarP(&lsFlg.exist, "exist", "e", false, "returns true/false based on path existence")
 }
