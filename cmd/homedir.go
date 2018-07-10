@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/rhysd/abspath"
+	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 )
 
@@ -28,12 +28,12 @@ var homedirCmd = &cobra.Command{
 	Short: i18nHomedirCmdTitle,
 	Long:  i18nHomedirCmdDetail,
 	Run: func(cmd *cobra.Command, args []string) {
-		home, err := abspath.HomeDir()
+		home, err := homedir.Dir()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		fmt.Println(home.String())
+		fmt.Println(home)
 	},
 }
 
