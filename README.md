@@ -137,16 +137,30 @@ You can generate an executable for your system via following commands.
 
 ##### On MacOS / Linux 
 ```
-go get -d -u github.com/isurfer21/UniversalShell
-cd $GOPATH/src/github.com/isurfer21/UniversalShell/
-go build -o $GOPATH/bin/ush ush.go
+$ go get -d -u github.com/isurfer21/UniversalShell
+$ cd $GOPATH/src/github.com/isurfer21/UniversalShell/
+$ go build -o $GOPATH/bin/ush ush.go
 ```
 
 #### On Windows
 ```
-go get -d -u github.com/isurfer21/UniversalShell
-cd %GOPATH%\src\github.com\isurfer21\UniversalShell\
-go build -o %GOPATH%\bin\ush.exe ush.go
+> go get -d -u github.com/isurfer21/UniversalShell
+> cd %GOPATH%\src\github.com\isurfer21\UniversalShell\
+> go build -o %GOPATH%\bin\ush.exe ush.go
+```
+
+#### Uninstalling, if installed via ```go get```
+
+##### On MacOS / Linux 
+```
+$ cd $GOPATH/src/github.com/isurfer21/UniversalShell/
+$ lua ./uninstall.lua
+```
+
+##### On Windows 
+```
+> cd %GOPATH%\src\github.com\isurfer21\UniversalShell\
+> lua uninstall.lua
 ```
 
 #### Manual installation using Git CLI

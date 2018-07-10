@@ -19,6 +19,8 @@ Gets the environment variable
 
 It retrieves the value of the environment variable named by the key. 
 It returns the value, which will be empty if the variable is not present.
+
+It would get environment variable from 'ush' config file as well.
 `
 )
 

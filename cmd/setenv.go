@@ -23,6 +23,8 @@ Sets the environment variable
 
 It sets the value of the environment variable named by the key. It returns an 
 error, if any.
+
+It would set environment variable into 'ush' config file.
 `
 	i18nSetenvTplConfirmationMsg = "%s %s \nAre you sure? (yes/no) "
 	i18nSetenvTplInvalidKVPair   = "%s is an invalid key-value pair\n"

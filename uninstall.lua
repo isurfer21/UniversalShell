@@ -16,35 +16,72 @@ function ush(command)
 end
 
 -- Custom library
-function countPatternOccurance(base, pattern)
-    return select(2, base:gsub(pattern, '/'))
+function trim (str)
+  if str == '' then
+    return str
+  else  
+    local startPos = 1
+    local endPos   = #str
+
+    while (startPos < endPos and str:byte(startPos) <= 32) do
+      startPos = startPos + 1
+    end
+
+    if startPos >= endPos then
+      return ''
+    else
+      while (endPos > 0 and str:byte(endPos) <= 32) do
+        endPos = endPos - 1
+      end
+
+      return str:sub(startPos, endPos)
+    end
+  end
+end
+
+function split(str, pat)
+   local t = {}  -- NOTE: use {n = 0} in Lua-5.0
+   local fpat = "(.-)" .. pat
+   local last_end = 1
+   local s, e, cap = str:find(fpat, 1)
+   while s do
+      if s ~= 1 or cap ~= "" then
+         table.insert(t,cap)
+      end
+      last_end = e+1
+      s, e, cap = str:find(fpat, last_end)
+   end
+   if last_end <= #str then
+      cap = str:sub(last_end)
+      table.insert(t, cap)
+   end
+   return t
+end
+
+function parent(str)
+    local p = split(str,'[\\/]+')
+    return string.format('%s/%s', p[1], p[2])
 end
 
 -- Start your shell tasks from here
 
-local pkg = arg[1]
-local ost
-local cnt
-local scr
+local pkg = 'github.com/isurfer21/UniversalShell'
 
 print('Clean removes object files from package source directories (ignore error)')
--- print(sh('go clean -i ' + pkg))
+print(sh('go clean -i ' .. pkg))
 
-print('Set local variables')
-
-if (ush('uname -m') == 'x86_64') {
-    ost = ush('uname')
-    ost = ost .. '_amd64'
-    cnt = countPatternOccurance(pkg, '/')
-}
-
--- todo: create a cmd to set & get env variable
 print('Delete the source directory and compiled package directory(ies)')
-local GOPATH = ush('getx GOPATH')
-if (cnt == 2) {
-    ush('rm -r -f ' .. GOPATH .. '"/src/' .. pkg .. '/*"')
-    ush('rm -rf ' .. GOPATH .. '"/pkg/' .. ost .. '/' .. pkg .. '/*"')
-} else (cnt > 2) {
-    ush('rm -rf ' .. GOPATH .. '"/src/' .. pkg .. '/*/*"')
-    ush('rm -rf ' .. GOPATH .. '"/pkg/' .. ost .. '/' .. pkg .. '/*/*"')
-}
+local GOPATH = trim(ush('getenv GOPATH'))
+
+print('Deleting package source')
+print(trim(ush(string.format('rm -v -r -f "%s/src/%s/"', GOPATH, pkg))))
+print('Deleting package source container, if empty')
+print(trim(ush(string.format('rm -v "%s/src/%s"', GOPATH, parent(pkg)))))
+
+if (trim(ush('uname -m')) == 'x86_64') then
+    local ost = trim(ush('uname')) .. '_amd64'
+	print('Deleting package objects')
+	print(trim(ush(string.format('rm -v -r -f "%s/pkg/%s/%s/"', GOPATH, ost, pkg))))
+	print('Deleting package objects container, if empty')
+	print(trim(ush(string.format('rm -v "%s/pkg/%s/%s"', GOPATH, ost, parent(pkg)))))
+end

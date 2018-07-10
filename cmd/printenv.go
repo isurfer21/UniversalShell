@@ -19,6 +19,8 @@ Prints all or part of the environment
 
 Print all or part of environment variable. If no environment VARIABLE 
 specified, print them all.
+
+It won't look into or print environment variable from 'ush' config file.
 `
 )
 

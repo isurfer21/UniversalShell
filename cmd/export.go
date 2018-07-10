@@ -22,6 +22,8 @@ const (
 Exports variables to the environment
 
 It is used to mark a shell variable for export to child processes.
+
+It would set/unset environment variable into 'ush' config file.
 `
 	i18nExportTplConfirmationMsg = "%s %s \nAre you sure? (yes/no) "
 	i18nExportTplInvalidKVPair   = "%s is an invalid key-value pair\n"
