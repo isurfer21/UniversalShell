@@ -4,3 +4,4 @@ ush
 testdata/
 .DS_Store
 bin/
+pub/
