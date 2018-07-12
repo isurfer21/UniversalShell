@@ -5,32 +5,14 @@ Copyright © 2018 Abhishek Kumar <isurfer21@gmail.com>
 This work is licensed under the 'MIT License'.
 ]]
 
-require 'ushlib'
+require 'UniversalShell'
 
 -- CORE
 
--- Format > Execute (Shell) > Print
-function S(...)
-  local output = sh(string.format(...))
-  if output ~= '' then 
-    print(output)
-  end
-  return output
-end
-
--- Format > Execute (Ush) > Print
-function U(...)
-  local output = ush(string.format(...))
-  if output ~= '' then 
-    print(output)
-  end
-  return output
-end
-
--- Format > Execute (Ush)
-function u(...)
-  return ush(string.format(...))
-end
+S = UniversalShell.shFmtExecPrnt
+s = UniversalShell.shFmtExec
+U = UniversalShell.ushFmtExecPrnt
+u = UniversalShell.ushFmtExec
 
 -- TASKS
 
@@ -77,7 +59,7 @@ end
 function release()
   print("# Create distributable packages")
 
-  local rootDir = ush('pwd')
+  local rootDir = u('pwd')
   local srcDir = rootDir
   local binDir = rootDir..'/bin'
   local pubDir = rootDir..'/pub'
@@ -184,7 +166,7 @@ end
 function genico()
   print("Generating appicons from master icon")
   -- TODO: To resolve 'Library not loaded' issue while executing ImageMagick commands
-  local rootDir = ush('pwd')
+  local rootDir = u('pwd')
   local imgDir = rootDir..'/img'
   S('convert "%s/original.png" -resize 512x512 "%s/appicon.icns"', imgDir, imgDir)
   S('convert "%s/original.png" -resize 128x128 "%s/appicon.ico"', imgDir, imgDir)
