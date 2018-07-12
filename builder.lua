@@ -41,6 +41,16 @@ Copyright (c) 2018 Abhishek Kumar. All rights reserved.
   ]])
 end
 
+function setup()
+  print("Setup all the go dependencies at GOPATH")
+  S('go get github.com/spf13/cobra')
+  S('go get github.com/spf13/viper')
+  S('go get github.com/mitchellh/go-homedir')
+  S('go get github.com/inhies/go-bytesize')
+  S('go get github.com/mholt/archiver')
+  print("Done!")
+end
+
 function build()
   print("Build for current machine only")
   S('go build ush.go')
@@ -96,7 +106,7 @@ function release()
       print('Delete last release build for Windows')
       U('rm "%s/Ush_windows_x86-64.zip"', pubDir)
     end 
-    local tmpDir = pubDir.."/ush_windows_x86-64"
+    local tmpDir = pubDir.."/Ush_windows_x86-64"
     U('mkdir "%s"', tmpDir)
     U('cp "%s/LICENSE" "%s/LICENSE"', binDir, tmpDir)
     U('cp "%s/README.md" "%s/README.md"', binDir, tmpDir)
@@ -120,7 +130,7 @@ function release()
       print('Delete last release build for MacOSX')
       U('rm "%s/Ush_macos_x86-64.zip"', pubDir)
     end 
-    local tmpDir = pubDir.."/ush_macos_x86-64"
+    local tmpDir = pubDir.."/Ush_macos_x86-64"
     U('mkdir "%s"', tmpDir)
     U('cp "%s/LICENSE" "%s/LICENSE"', binDir, tmpDir)
     U('cp "%s/README.md" "%s/README.md"', binDir, tmpDir)
@@ -144,7 +154,7 @@ function release()
       print('Delete last release build for Linux')
       U('rm "%s/Ush_linux_x86-64.zip"', pubDir)
     end 
-    local tmpDir = pubDir.."/ush_linux_x86-64"
+    local tmpDir = pubDir.."/Ush_linux_x86-64"
     U('mkdir "%s"', tmpDir)
     U('cp "%s/LICENSE" "%s/LICENSE"', binDir, tmpDir)
     U('cp "%s/README.md" "%s/README.md"', binDir, tmpDir)
@@ -185,6 +195,7 @@ function help()
   print([[
 Options:
   version       to see the current version of the app
+  setup         to install all the go dependencies 
   build         to build a binary executable for current OS & Arch only
   xbuild        to cross build binary executables for MacOSX, Windows, Linux as 32 & 64 bit
   xbuilds       to cross build binary executables for all OS & Arch
