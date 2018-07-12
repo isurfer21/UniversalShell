@@ -67,7 +67,9 @@ To create a cross-platform application as a portable executable that could run b
  - [ ] uniq
  - [x] uname
  - [x] unsetenv
+ - [x] unzip
  - [x] which
+ - [x] zip
 
 ### References
  - Bash, i.e., Linux Terminal
