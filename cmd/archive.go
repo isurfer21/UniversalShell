@@ -24,9 +24,9 @@ It could create and extract .zip, .tar, .tar.gz, .tar.bz2, .tar.xz, .tar.lz4,
 Supported formats are zip, tar, tgz, tbz2, txz, tlz4, tsz, rar.
 
 Syntax:
-  ush archive -c -f=zip <archive-filename> <input-directory>
-  ush archive -c -f=zip <archive-filename> <input-files...>
-  ush archive -d -f=zip <archive-filename> <output-directory>
+  ush archive -c -F=zip <archive-filename> <input-directory>
+  ush archive -c -F=zip <archive-filename> <input-files...>
+  ush archive -d -F=zip <archive-filename> <output-directory>
 
 Example:
   ush archive -d test.zip test
@@ -116,5 +116,5 @@ func init() {
 	// Cobra supports local flags which will only run when this command is called directly, e.g.:
 	archiveCmd.Flags().BoolVarP(&archiveFlg.compress, "compress", "c", false, "Compress files or directories")
 	archiveCmd.Flags().BoolVarP(&archiveFlg.decompress, "decompress", "d", false, "Decompress files or directories")
-	archiveCmd.Flags().StringVarP(&archiveFlg.format, "format", "f", "zip", "Formats: zip, tar, tgz, tbz2, txz, tlz4, tsz, rar")
+	archiveCmd.Flags().StringVarP(&archiveFlg.format, "format", "F", "zip", "Formats: zip, tar, tgz, tbz2, txz, tlz4, tsz, rar")
 }

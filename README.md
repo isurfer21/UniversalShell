@@ -33,7 +33,6 @@ To create a cross-platform application as a portable executable that could run b
 
 ### Features
  - [ ] cat
- - [ ] cd
  - [ ] chmod
  - [x] cp
  - [ ] dirs
@@ -61,14 +60,16 @@ To create a cross-platform application as a portable executable that could run b
  - [x] setenv
  - [ ] sort
  - [ ] tail
+ - [x] tar
  - [x] tmpdir
- - [ ] test
  - [x] touch
  - [ ] uniq
  - [x] uname
  - [x] unsetenv
+ - [x] unrar
  - [x] unzip
  - [x] which
+ - [x] xz
  - [x] zip
 
 ### References

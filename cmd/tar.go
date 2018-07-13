@@ -24,7 +24,7 @@ tbz2, txz, tlz4, tsz formats.
 Syntax:
   ush tar -c -f <archive-filename> <input-directory>
   ush tar -c -f <archive-filename> <input-files...>
-  ush tar -c -f <archive-filename> <output-directory>
+  ush tar -x -f <archive-filename> <output-directory>
 
 Example:  
   # Archives the content of 'test' folder into tar file 
@@ -43,6 +43,20 @@ Example:
   # Extracts in current working directory
   ush tar -x -f test.tar ""
   ush tar -x -f test.tar
+
+  # Archives the source directory into various compression formats 
+  ush tar -c -z -f test.gz test
+  ush tar -c -j -f test.bz2 test
+  ush tar -c -J -f test.xz test
+  ush tar -c -s -f test.sz test
+  ush tar -c -l -f test.lz4 test
+
+  # Extracts files of various compression formats in 'test' directory 
+  ush tar -x -z -f test.gz test
+  ush tar -x -j -f test.bz2 test
+  ush tar -x -J -f test.xz test
+  ush tar -x -s -f test.sz test
+  ush tar -x -l -f test.lz4 test
 `
 	i18nTarTplActionMissing = `
 Action flag for compress/decompress is missing
@@ -60,12 +74,38 @@ func (tar *TarLib) handleError(err error) {
 }
 
 func (tar *TarLib) compress(filename string, items []string) {
-	err := archiver.Tar.Make(filename, items)
+	var err error
+	if tarFlg.gzip {
+		err = archiver.TarGz.Make(filename, items)
+	} else if tarFlg.bzip2 {
+		err = archiver.TarBz2.Make(filename, items)
+	} else if tarFlg.lz4 {
+		err = archiver.TarLz4.Make(filename, items)
+	} else if tarFlg.xz {
+		err = archiver.TarXZ.Make(filename, items)
+	} else if tarFlg.sz {
+		err = archiver.TarSz.Make(filename, items)
+	} else {
+		err = archiver.Tar.Make(filename, items)
+	}
 	tar.handleError(err)
 }
 
 func (tar *TarLib) decompress(filename string, output string) {
-	err := archiver.Tar.Open(filename, output)
+	var err error
+	if tarFlg.gzip {
+		err = archiver.TarGz.Open(filename, output)
+	} else if tarFlg.bzip2 {
+		err = archiver.TarBz2.Open(filename, output)
+	} else if tarFlg.lz4 {
+		err = archiver.TarLz4.Open(filename, output)
+	} else if tarFlg.xz {
+		err = archiver.TarXZ.Open(filename, output)
+	} else if tarFlg.sz {
+		err = archiver.TarSz.Open(filename, output)
+	} else {
+		err = archiver.Tar.Open(filename, output)
+	}
 	tar.handleError(err)
 }
 
@@ -75,7 +115,7 @@ type TarFlag struct {
 	extract bool
 	gzip    bool
 	bzip2   bool
-	lzip4   bool
+	lz4     bool
 	xz      bool
 	sz      bool
 }
@@ -114,16 +154,11 @@ func init() {
 	rootCmd.AddCommand(tarCmd)
 
 	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command and all subcommands, e.g.:
-	// tarCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command is called directly, e.g.:
+	tarCmd.Flags().StringVarP(&tarFlg.file, "file", "f", "tar", "use archive file or device")
 	tarCmd.Flags().BoolVarP(&tarFlg.create, "create", "c", false, "create a new archive")
 	tarCmd.Flags().BoolVarP(&tarFlg.extract, "extract", "d", false, "extract files from an archive")
-	tarCmd.Flags().StringVarP(&tarFlg.file, "file", "f", "tar", "use archive file or device")
-	tarCmd.Flags().BoolVarP(&tarFlg.gzip, "gzip", "z", false, "filter the archive through gzip")
-	tarCmd.Flags().BoolVarP(&tarFlg.bzip2, "bzip2", "j", false, "filter the archive through bzip2")
+	tarCmd.Flags().BoolVarP(&tarFlg.gzip, "gzip", "z", false, "filter the archive through gzip (.gz)")
+	tarCmd.Flags().BoolVarP(&tarFlg.bzip2, "bzip2", "j", false, "filter the archive through bzip2 (.bz2)")
 	tarCmd.Flags().BoolVarP(&tarFlg.lz4, "lz4", "l", false, "filter the archive through lz4")
 	tarCmd.Flags().BoolVarP(&tarFlg.xz, "xz", "J", false, "filter the archive through xz")
 	tarCmd.Flags().BoolVarP(&tarFlg.sz, "sz", "s", false, "filter the archive through sz")

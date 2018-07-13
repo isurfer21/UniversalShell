@@ -108,9 +108,9 @@ function release()
 
   if contains(arg, '-mac') then 
     print('Publishing release for MacOSX')
-    if u('ls -e "%s/Ush_macos_x86-64.zip"', pubDir) == 'true' then
+    if u('ls -e "%s/Ush_macos_x86-64.gz"', pubDir) == 'true' then
       print('Delete last release build for MacOSX')
-      U('rm "%s/Ush_macos_x86-64.zip"', pubDir)
+      U('rm "%s/Ush_macos_x86-64.gz"', pubDir)
     end 
     local tmpDir = pubDir.."/Ush_macos_x86-64"
     U('mkdir "%s"', tmpDir)
@@ -120,7 +120,7 @@ function release()
     U('mkdir "%s/bin"', tmpDir)
     U('cp "%s/ush_darwin_386" "%s/bin/ush_darwin_32bit"', binDir, tmpDir)
     U('cp "%s/ush_darwin_amd64" "%s/bin/ush_darwin_64bit"', binDir, tmpDir)
-    U('zip "%s/Ush_macos_x86-64.zip" "%s/"', pubDir, tmpDir)
+    U('tar -c -z -f "%s/Ush_macos_x86-64.gz" "%s/"', pubDir, tmpDir)
     U('rm -r -f "%s"', tmpDir)
     if contains(arg, '-rmb') then 
       print("Delete all builds for MacOSX")
@@ -132,9 +132,9 @@ function release()
 
   if contains(arg, '-nix') then 
     print('Publishing release for Linux')
-    if u('ls -e "%s/Ush_linux_x86-64.zip"', pubDir) == 'true' then
+    if u('ls -e "%s/Ush_linux_x86-64.bz2"', pubDir) == 'true' then
       print('Delete last release build for Linux')
-      U('rm "%s/Ush_linux_x86-64.zip"', pubDir)
+      U('rm "%s/Ush_linux_x86-64.bz2"', pubDir)
     end 
     local tmpDir = pubDir.."/Ush_linux_x86-64"
     U('mkdir "%s"', tmpDir)
@@ -147,7 +147,7 @@ function release()
     if u('ls -e "%s/ush_linux_arm"', binDir) == 'true' then
       U('cp "%s/ush_linux_arm" "%s/bin/ush_linux_arm"', binDir, tmpDir)
     end
-    U('zip "%s/Ush_linux_x86-64.zip" "%s/"', pubDir, tmpDir)
+    U('tar -c -j -f "%s/Ush_linux_x86-64.bz2" "%s/"', pubDir, tmpDir)
     U('rm -r -f "%s"', tmpDir)
     if contains(arg, '-rmb') then 
       print("Delete all builds for Linux")
