@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 
+	tm "github.com/buger/goterm"
 	"github.com/inhies/go-bytesize"
 	"github.com/spf13/cobra"
 
@@ -19,9 +20,9 @@ import (
 )
 
 const (
-	i18nLsCmdTitle  = "List directory contents"
+	i18nLsCmdTitle  = "List information about file(s)"
 	i18nLsCmdDetail = `
-List directory contents
+List information about file(s)
 
 It displays a list of files and sub-directories in a directory which could be 
 rendered in various ways based on passed flags.
@@ -39,29 +40,8 @@ func (ls *LsLib) handleError(err error) {
 	}
 }
 
-func (ls *LsLib) getRawTabulated(file os.FileInfo) []string {
+func (ls *LsLib) classify(file os.FileInfo) string {
 	fileName := file.Name()
-	fileMod := file.Mode().String()
-	isDir := ""
-	if file.IsDir() {
-		isDir = "Dir"
-	}
-	fileSize := strconv.FormatInt(file.Size(), 10)
-	fileModTime := file.ModTime().String()
-	row := []string{
-		fileMod,
-		fileSize,
-		fileModTime,
-		isDir,
-		fileName,
-	}
-	return row
-}
-
-func (ls *LsLib) getFmtTabulated(file os.FileInfo) []string {
-	fileName := file.Name()
-	fileMod := file.Mode().String()
-	fileSize := "-"
 	if file.IsDir() {
 		var pathSeparator string
 		if runtime.GOOS == "windows" {
@@ -70,16 +50,135 @@ func (ls *LsLib) getFmtTabulated(file os.FileInfo) []string {
 			pathSeparator = "/"
 		}
 		fileName += pathSeparator
-	} else {
-		bytesize.Format = "%.1f"
-		fileSize = bytesize.New(float64(file.Size())).String()
 	}
-	fileModTime := file.ModTime().Format("Jan 02, 2006 15:04")
-	row := []string{
-		fileMod,
-		fileSize,
-		fileModTime,
-		fileName,
+	return fileName
+}
+
+func (ls *LsLib) fmtFileSize(file os.FileInfo, fmt string) string {
+	bytesize.Format = fmt
+	return bytesize.New(float64(file.Size())).String()
+}
+
+func (ls *LsLib) padWithSpace(text string, limit int) string {
+	pad := ""
+	absLmt := limit
+	if limit < 0 {
+		absLmt = -limit
+	}
+	remain := absLmt - len(text)
+	for i := 0; i < remain; i += 1 {
+		pad += " "
+	}
+	output := ""
+	if limit < 0 {
+		output = pad + text
+	} else {
+		output = text + pad
+	}
+	return output
+}
+
+func (ls *LsLib) listFileInGrid(list []os.FileInfo) string {
+	output := ""
+	colSize := ls.maxTextLen(list, "Name") + 2
+	colCount := tm.Width() / colSize
+	index := 0
+	for _, file := range list {
+		if lsFlg.all || !ls.isDotEntry(file) {
+			fileName := file.Name()
+			output += ls.padWithSpace(fileName, colSize)
+			if (index % colCount) == colCount-1 {
+				output += "\n"
+			}
+			index += 1
+		}
+	}
+	return output
+}
+
+func (ls *LsLib) listFileWithSizeInGrid(list []os.FileInfo) string {
+	output := ""
+	nameLen := ls.maxTextLen(list, "Name")
+	sizeLen := ls.maxTextLen(list, "Size")
+	colSize := nameLen + sizeLen + 3
+	colCount := tm.Width() / colSize
+	index := 0
+	for _, file := range list {
+		if lsFlg.all || !ls.isDotEntry(file) {
+			fileName := ls.padWithSpace(file.Name(), nameLen)
+			fileSize := ls.padWithSpace(ls.fmtFileSize(file, "%.0f"), -sizeLen)
+			output += ls.padWithSpace(fmt.Sprintf("%s %s", fileSize, fileName), colSize)
+			if (index % colCount) == colCount-1 {
+				output += "\n"
+			}
+			index += 1
+		}
+	}
+	return output
+}
+
+func (ls *LsLib) maxTextLen(list []os.FileInfo, prop string) int {
+	max := 0
+	span := 0
+	for _, file := range list {
+		if prop == "Name" {
+			span = len(file.Name())
+		} else if prop == "Size" {
+			bytesize.Format = "%.0f"
+			fileSize := bytesize.New(float64(file.Size())).String()
+			span = len(fileSize)
+		}
+		if max < span {
+			max = span
+		}
+	}
+	return max
+}
+
+func (ls *LsLib) isDotEntry(file os.FileInfo) bool {
+	fileName := file.Name()
+	if string(fileName[0]) == "." {
+		return true
+	}
+	return false
+}
+
+func (ls *LsLib) listFileInTable(file os.FileInfo) []string {
+	fileName := ls.classify(file)
+	fileMod := file.Mode().String()
+	fileSize := "-"
+	isDir := ""
+	if file.IsDir() {
+		isDir = "Dir"
+	} else {
+		if lsFlg.raw {
+			fileSize = strconv.FormatInt(file.Size(), 10)
+		} else {
+			fileSize = ls.fmtFileSize(file, "%.1f")
+		}
+	}
+	fileModTime := ""
+	if lsFlg.time {
+		fileModTime = file.ModTime().String()
+	} else {
+		fileModTime = file.ModTime().Format("Jan 02, 2006 15:04")
+	}
+	row := []string{}
+	if lsFlg.raw {
+		row = []string{
+			fileMod,
+			fileSize,
+			fileModTime,
+			isDir,
+			fileName,
+		}
+	} else {
+		row = []string{
+			fileMod,
+			fileSize,
+			fileModTime,
+			fileName,
+		}
 	}
 	return row
 }
@@ -90,29 +189,34 @@ func (ls *LsLib) dir(location string) string {
 
 	separator := "  "
 	list := []string{}
-	for _, file := range items {
-		if lsFlg.tabulated || lsFlg.raw {
-			separator = "\n"
-			row := []string{}
-			if lsFlg.raw {
-				row = ls.getRawTabulated(file)
+	if lsFlg.column {
+		return ls.listFileInGrid(items)
+	} else if lsFlg.size {
+		return ls.listFileWithSizeInGrid(items)
+	} else {
+		for _, file := range items {
+			if lsFlg.all || !ls.isDotEntry(file) {
+				if lsFlg.tabulated {
+					separator = "\n"
+					row := ls.listFileInTable(file)
+					list = append(list, strings.Join(row[:], "\t"))
+				} else {
+					fileName := file.Name()
+					if lsFlg.vertical {
+						separator = "\n"
+					}
+					if lsFlg.horizontal {
+						separator = " \t"
+					}
+					if lsFlg.csv {
+						separator = ", "
+					}
+					list = append(list, fileName)
+				}
 			}
-			if lsFlg.tabulated {
-				row = ls.getFmtTabulated(file)
-			}
-			list = append(list, strings.Join(row[:], "\t"))
-		} else {
-			if lsFlg.vertical {
-				separator = "\n"
-			}
-			if lsFlg.horizontal {
-				separator = " \t"
-			}
-			list = append(list, file.Name())
 		}
+		return strings.Join(list[:], separator)
 	}
-
-	return strings.Join(list[:], separator)
 }
 
 func (ls *LsLib) exist(location string) bool {
@@ -123,11 +227,18 @@ func (ls *LsLib) exist(location string) bool {
 }
 
 type lsFlag struct {
+	all        bool
+	almostall  bool
+	classify   bool
+	column     bool
+	csv        bool
+	exist      bool
 	horizontal bool
-	vertical   bool
 	tabulated  bool
 	raw        bool
-	exist      bool
+	size       bool
+	time       bool
+	vertical   bool
 }
 
 var (
@@ -151,13 +262,11 @@ var lsCmd = &cobra.Command{
 			if len(args) > 0 {
 				location = args[0]
 			}
-			var out string
 			if lsFlg.exist {
-				out = strconv.FormatBool(lsLib.exist(location))
+				fmt.Println(strconv.FormatBool(lsLib.exist(location)))
 			} else {
-				out = lsLib.dir(location)
+				fmt.Println(lsLib.dir(location))
 			}
-			fmt.Printf("%s\n", out)
 		}
 	},
 }
@@ -166,9 +275,16 @@ func init() {
 	rootCmd.AddCommand(lsCmd)
 
 	// Here you will define your flags and configuration settings.
-	lsCmd.Flags().BoolVarP(&lsFlg.horizontal, "horz", "x", false, "display the list horizontally")
-	lsCmd.Flags().BoolVarP(&lsFlg.vertical, "vert", "y", false, "display the list vertically")
-	lsCmd.Flags().BoolVarP(&lsFlg.tabulated, "long", "l", false, "display extended file metadata as a table")
-	lsCmd.Flags().BoolVarP(&lsFlg.raw, "raw", "r", false, "display raw extended file metadata as a table")
+	lsCmd.Flags().BoolVarP(&lsFlg.all, "all", "a", false, "list all entries including those starting with a dot .")
+	// lsCmd.Flags().BoolVarP(&lsFlg.almostall, "almostall", "A", false, "list all entries except for . and ..")
+	lsCmd.Flags().BoolVarP(&lsFlg.classify, "classify", "F", false, "append indicator (one of */=@|) to entries")
+	lsCmd.Flags().BoolVarP(&lsFlg.column, "column", "C", false, "list entries by columns (vertical)")
+	lsCmd.Flags().BoolVarP(&lsFlg.csv, "csv", "m", false, "fill width with a comma separated list of entries")
 	lsCmd.Flags().BoolVarP(&lsFlg.exist, "exist", "e", false, "returns true/false based on path existence")
+	lsCmd.Flags().BoolVarP(&lsFlg.horizontal, "line", "x", false, "list entries by lines (horizontal)")
+	lsCmd.Flags().BoolVarP(&lsFlg.tabulated, "long", "l", false, "use a long listing format")
+	lsCmd.Flags().BoolVarP(&lsFlg.raw, "raw", "r", false, "display raw extended file metadata in a table")
+	lsCmd.Flags().BoolVarP(&lsFlg.size, "size", "s", false, "print size of each file, in blocks")
+	lsCmd.Flags().BoolVarP(&lsFlg.time, "time", "T", false, "display complete time information for the file")
+	lsCmd.Flags().BoolVarP(&lsFlg.vertical, "vertical", "1", false, "list one file per line")
 }
