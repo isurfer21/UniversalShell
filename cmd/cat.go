@@ -47,8 +47,29 @@ func (cat *CatLib) writeFile(filename string, content string) {
 	cat.handleError(err)
 }
 
+func (cat *CatLib) adjoinFile(filename string, content string) {
+	file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
+	cat.handleError(err)
+	defer file.Close()
+	_, err = file.WriteString(content)
+	cat.handleError(err)
+}
+
 func (cat *CatLib) createFile(filename string) {
 	file, err := os.Create(filename)
+	cat.handleError(err)
+	for {
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Scan()
+		_, err := file.WriteString(scanner.Text() + "\n")
+		cat.handleError(err)
+		file.Sync()
+	}
+	defer file.Close()
+}
+
+func (cat *CatLib) appendFile(filename string) {
+	file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
 	cat.handleError(err)
 	for {
 		scanner := bufio.NewScanner(os.Stdin)
@@ -141,12 +162,18 @@ var catCmd = &cobra.Command{
 			}
 			if catFlg.output != "" {
 				catLib.writeFile(catFlg.output, output)
+			} else if catFlg.append != "" {
+				catLib.adjoinFile(catFlg.append, output)
 			} else {
 				fmt.Print(output)
 			}
 		} else {
 			if catFlg.output != "" {
 				catLib.createFile(catFlg.output)
+			} else if catFlg.append != "" {
+				catLib.appendFile(catFlg.append)
+			} else if catFlg.input != "" {
+				fmt.Print(catLib.readFile(catFlg.input))
 			}
 		}
 	},
