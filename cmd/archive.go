@@ -64,14 +64,14 @@ func (archive *ArchiveLib) decompress(filename string, output string) {
 	archive.handleError(err)
 }
 
-type archiveFlag struct {
+type ArchiveFlag struct {
 	compress   bool
 	decompress bool
 	format     string
 }
 
 var (
-	archiveFlg archiveFlag
+	archiveFlg ArchiveFlag
 	archiveLib ArchiveLib
 )
 

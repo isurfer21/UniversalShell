@@ -33,7 +33,7 @@ func (uname *UnameLib) handleError(err error) {
 	}
 }
 
-type unameFlag struct {
+type UnameFlag struct {
 	all       bool
 	machine   bool
 	node      bool
@@ -44,7 +44,7 @@ type unameFlag struct {
 }
 
 var (
-	unameFlg unameFlag
+	unameFlg UnameFlag
 	unameLib UnameLib
 )
 

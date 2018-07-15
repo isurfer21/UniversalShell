@@ -90,12 +90,12 @@ func (export *ExportLib) getKey(ev string) (string, error) {
 	return "", fmt.Errorf(i18nExportTplInvalidKVPair, ev)
 }
 
-type exportFlag struct {
+type ExportFlag struct {
 	interactive bool
 }
 
 var (
-	exportFlg exportFlag
+	exportFlg ExportFlag
 	exportLib ExportLib
 )
 

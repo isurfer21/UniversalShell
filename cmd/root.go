@@ -77,7 +77,7 @@ func (root *RootLib) catchError(err error) {
 	}
 }
 
-type rootFlag struct {
+type RootFlag struct {
 	version bool
 	license bool
 }
@@ -85,7 +85,7 @@ type rootFlag struct {
 var (
 	dye        color.Color
 	configFile string
-	rootFlg    rootFlag
+	rootFlg    RootFlag
 	rootLib    RootLib
 )
 

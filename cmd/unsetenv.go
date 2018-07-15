@@ -57,12 +57,12 @@ func (unsetenv *UnsetenvLib) isConfirmed(way string, key string) bool {
 	}
 }
 
-type unsetenvFlag struct {
+type UnsetenvFlag struct {
 	interactive bool
 }
 
 var (
-	unsetenvFlg unsetenvFlag
+	unsetenvFlg UnsetenvFlag
 	unsetenvLib UnsetenvLib
 )
 

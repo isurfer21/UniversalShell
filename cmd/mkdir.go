@@ -22,11 +22,11 @@ mode rwxrwxrwx (0777).
 `
 )
 
-type mkdirFlag struct {
+type MkdirFlag struct {
 	path bool
 }
 
-var mkdirFlg mkdirFlag
+var mkdirFlg MkdirFlag
 
 // mkdirCmd represents the mkdir command
 var mkdirCmd = &cobra.Command{

@@ -60,12 +60,12 @@ func (setenv *SetenvLib) isConfirmed(way string, key string) bool {
 	}
 }
 
-type setenvFlag struct {
+type SetenvFlag struct {
 	interactive bool
 }
 
 var (
-	setenvFlg setenvFlag
+	setenvFlg SetenvFlag
 	setenvLib SetenvLib
 )
 

@@ -26,11 +26,11 @@ and newpath are in different directories.
 `
 )
 
-type mvFlag struct {
+type MvFlag struct {
 	path bool
 }
 
-var mvFlg mvFlag
+var mvFlg MvFlag
 
 // mvCmd represents the mv command
 var mvCmd = &cobra.Command{

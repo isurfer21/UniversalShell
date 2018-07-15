@@ -30,11 +30,16 @@ To create a cross-platform application as a portable executable that could run b
  - Built-in shell commands
  - Compatible to Windows, MacOS, Linux
  - Required no external dependency
+ - Implemented in pure Go language
 
 ### Features
- - [ ] cat
+ - [x] archive
+ - [x] basename
+ - [x] cat
  - [ ] chmod
  - [x] cp
+ - [x] dir
+ - [x] dirname
  - [ ] dirs
  - [x] echo
  - [ ] error
@@ -46,6 +51,7 @@ To create a cross-platform application as a portable executable that could run b
  - [ ] head
  - [x] help
  - [x] homedir
+ - [x] id
  - [ ] ln
  - [x] ls
  - [x] mkdir
@@ -69,6 +75,7 @@ To create a cross-platform application as a portable executable that could run b
  - [x] unrar
  - [x] unzip
  - [x] which
+ - [x] whoami
  - [x] xz
  - [x] zip
 

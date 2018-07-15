@@ -50,11 +50,11 @@ func (cp *CpLib) copy(src string, dest string) {
 	}
 }
 
-type cpFlag struct {
+type CpFlag struct {
 }
 
 var (
-	cpFlg cpFlag
+	cpFlg CpFlag
 	cpLib CpLib
 )
 

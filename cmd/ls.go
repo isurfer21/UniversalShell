@@ -226,7 +226,7 @@ func (ls *LsLib) exist(location string) bool {
 	return true
 }
 
-type lsFlag struct {
+type LsFlag struct {
 	all        bool
 	almostall  bool
 	classify   bool
@@ -242,7 +242,7 @@ type lsFlag struct {
 }
 
 var (
-	lsFlg lsFlag
+	lsFlg LsFlag
 	lsLib LsLib
 )
 
@@ -276,7 +276,7 @@ func init() {
 
 	// Here you will define your flags and configuration settings.
 	lsCmd.Flags().BoolVarP(&lsFlg.all, "all", "a", false, "list all entries including those starting with a dot .")
-	// lsCmd.Flags().BoolVarP(&lsFlg.almostall, "almostall", "A", false, "list all entries except for . and ..")
+	// lsCmd.Flags().BoolVarP(&lsFlg.almostall, "almost-all", "A", false, "list all entries except for . and ..")
 	lsCmd.Flags().BoolVarP(&lsFlg.classify, "classify", "F", false, "append indicator (one of */=@|) to entries")
 	lsCmd.Flags().BoolVarP(&lsFlg.column, "column", "C", false, "list entries by columns (vertical)")
 	lsCmd.Flags().BoolVarP(&lsFlg.csv, "csv", "m", false, "fill width with a comma separated list of entries")
