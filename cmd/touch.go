@@ -22,6 +22,30 @@ it is created with default permissions.
 `
 )
 
+type TouchLib struct {
+}
+
+func (touch *TouchLib) handleError(err error) {
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+func (touch *TouchLib) createFile(filename string) {
+	file, err := os.Create(filename)
+	touchLib.handleError(err)
+	defer file.Close()
+}
+
+type TouchFlag struct {
+}
+
+var (
+	touchFlg TouchFlag
+	touchLib TouchLib
+)
+
 // touchCmd represents the touch command
 var touchCmd = &cobra.Command{
 	Use:   "touch",
@@ -30,12 +54,7 @@ var touchCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		for i := 0; i < len(args); i++ {
-			file, err := os.Create(args[i])
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-			defer file.Close()
+			touchLib.createFile(args[i])
 		}
 	},
 }
