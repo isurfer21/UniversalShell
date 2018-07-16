@@ -48,7 +48,7 @@ To create a cross-platform application as a portable executable that could run b
  - [ ] find
  - [x] getenv
  - [ ] grep
- - [ ] head
+ - [x] head
  - [x] help
  - [x] homedir
  - [x] id
