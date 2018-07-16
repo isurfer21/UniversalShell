@@ -53,7 +53,8 @@ To create a cross-platform application as a portable executable that could run b
  - [x] help
  - [x] homedir
  - [x] id
- - [ ] ln
+ - [x] link
+ - [x] ln
  - [x] ls
  - [x] mkdir
  - [x] mv
@@ -70,7 +71,7 @@ To create a cross-platform application as a portable executable that could run b
  - [x] tar
  - [x] tmpdir
  - [x] touch
- - [ ] uniq
+ - [x] uniq
  - [x] uname
  - [x] unsetenv
  - [x] unrar

@@ -40,6 +40,10 @@ func (ls *LsLib) handleError(err error) {
 	}
 }
 
+func (ls *LsLib) isSymlink(file os.FileInfo) bool {
+	return (file.Mode()&os.ModeSymlink != 0)
+}
+
 func (ls *LsLib) classify(file os.FileInfo) string {
 	fileName := file.Name()
 	if file.IsDir() {
@@ -146,6 +150,11 @@ func (ls *LsLib) isDotEntry(file os.FileInfo) bool {
 func (ls *LsLib) listFileInTable(file os.FileInfo) []string {
 	fileName := ls.classify(file)
 	fileMod := file.Mode().String()
+	if ls.isSymlink(file) {
+		link, err := os.Readlink(file.Name())
+		ls.handleError(err)
+		fileName += " -> " + link
+	}
 	fileSize := "-"
 	isDir := ""
 	if file.IsDir() {
