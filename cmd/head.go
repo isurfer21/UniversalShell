@@ -20,6 +20,7 @@ const (
 Output the first part of file(s)
 
 Output the first part of files, prints the first part (10 lines by default) of each file.
+Priority of option 'quiet' is more than 'verbose'.
 `
 )
 
@@ -42,7 +43,7 @@ func (head *HeadLib) readFile(filename string) string {
 func (head *HeadLib) printFirstNLines(count int, content string) string {
 	lines := strings.Split(content, "\n")
 	output := ""
-	for i := 0; i < count && i < len(lines)-1; i += 1 {
+	for i := 0; i < count && i < len(lines); i += 1 {
 		output += fmt.Sprintf("%s\n", lines[i])
 	}
 	return output
@@ -70,6 +71,9 @@ var headCmd = &cobra.Command{
 			for i := 0; i < len(args); i += 1 {
 				content := headLib.readFile(args[i])
 				content = headLib.printFirstNLines(headFlg.lines, content)
+				if (len(args) > 1 && !headFlg.quiet) || (headFlg.verbose && !headFlg.quiet) {
+					content = fmt.Sprintf("==> %s <==\n%s", args[i], content)
+				}
 				output += content
 			}
 			fmt.Printf(output)
