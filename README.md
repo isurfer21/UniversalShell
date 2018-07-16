@@ -66,7 +66,7 @@ To create a cross-platform application as a portable executable that could run b
  - [ ] set
  - [x] setenv
  - [ ] sort
- - [ ] tail
+ - [x] tail
  - [x] tar
  - [x] tmpdir
  - [x] touch
@@ -87,6 +87,9 @@ To create a cross-platform application as a portable executable that could run b
  - [shx](https://github.com/shelljs/shx)
 
 ### Known issues / limitations
+
+ - Clubing of command options/flags are not supported
+ - Arrow operators are replaced with flags within in-built commands
 
 ##### On Windows
  - Terminal error message shows unformatted characters instead of coloured string. So I would recommend to use light-weight *ConEmu* app in place of default *command-prompt*.

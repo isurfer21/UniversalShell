@@ -43,7 +43,11 @@ func (head *HeadLib) readFile(filename string) string {
 func (head *HeadLib) printFirstNLines(count int, content string) string {
 	lines := strings.Split(content, "\n")
 	output := ""
-	for i := 0; i < count && i < len(lines); i += 1 {
+	headCnt := len(lines)
+	if count < len(lines) {
+		headCnt = count
+	}
+	for i := 0; i < headCnt; i += 1 {
 		output += fmt.Sprintf("%s\n", lines[i])
 	}
 	return output
