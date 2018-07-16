@@ -31,6 +31,8 @@ var clearCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
 		tm.Clear()
+		tm.MoveCursor(1, 1)
+		tm.Flush()
 	},
 }
 
