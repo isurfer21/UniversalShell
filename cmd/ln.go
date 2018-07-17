@@ -53,6 +53,33 @@ func (ln *LnLib) handleError(err error) {
 	}
 }
 
+func (ln *LnLib) getBackup(linkFile string) {
+	if _, err := os.Stat(linkFile); err == nil {
+		oldLinkFile := linkFile
+		bakLinkFile := linkFile
+		if lnFlg.suffix != "" {
+			bakLinkFile += lnFlg.suffix
+		} else {
+			bakLinkFile += "~"
+		}
+		err := os.Rename(oldLinkFile, bakLinkFile)
+		lnLib.handleError(err)
+	}
+}
+
+func (ln *LnLib) delExistingLink(linkFile string) {
+	if _, err := os.Stat(linkFile); err == nil {
+		if lnFlg.interactive {
+			fmt.Printf(i18nLnTplConfirmationMsg, linkFile)
+			if lnLib.evoke.AskForConfirmation() {
+				lnLib.handleError(os.Remove(linkFile))
+			}
+		} else {
+			lnLib.handleError(os.Remove(linkFile))
+		}
+	}
+}
+
 type LnFlag struct {
 	backup            bool
 	directory         bool
@@ -81,39 +108,22 @@ var lnCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		origSrcFile := args[0]
-		trgFilepath, err := os.Getwd()
-		lnLib.handleError(err)
-		newLinkFile := "~" + filepath.Base(origSrcFile)
+		newLinkFile := filepath.Base(origSrcFile)
 		if len(args) > 1 {
 			newLinkFile = args[1]
 		}
 		if lnFlg.targetdirectory != "" {
 			newLinkFile = path.Join(lnFlg.targetdirectory, newLinkFile)
 		} else if lnFlg.notargetdirectory {
+			trgFilepath, err := os.Getwd()
+			lnLib.handleError(err)
 			newLinkFile = path.Join(trgFilepath, newLinkFile)
 		}
 		if lnFlg.backup {
-			if _, err := os.Stat(newLinkFile); err == nil {
-				if lnFlg.suffix != "" {
-					newLinkFile += lnFlg.suffix
-				} else {
-					newLinkFile += "~"
-				}
-				err := os.Rename(newLinkFile, newLinkFile)
-				lnLib.handleError(err)
-			}
+			lnLib.getBackup(newLinkFile)
 		}
 		if lnFlg.force {
-			if _, err := os.Stat(newLinkFile); err == nil {
-				if lnFlg.interactive {
-					fmt.Printf(i18nLnTplConfirmationMsg, newLinkFile)
-					if lnLib.evoke.AskForConfirmation() {
-						lnLib.handleError(os.Remove(newLinkFile))
-					}
-				} else {
-					lnLib.handleError(os.Remove(newLinkFile))
-				}
-			}
+			lnLib.delExistingLink(newLinkFile)
 		}
 		if lnFlg.physical {
 			lnLib.handleError(os.Link(origSrcFile, newLinkFile))

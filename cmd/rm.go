@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -43,6 +44,12 @@ func (rm *RmLib) handleError(err error) {
 	}
 }
 
+func (rm *RmLib) catchError(err error) {
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
 func (rm *RmLib) logVerbose(s string) {
 	if rmFlg.verbose {
 		fmt.Println(s)
@@ -50,8 +57,16 @@ func (rm *RmLib) logVerbose(s string) {
 }
 
 func (rm *RmLib) delAll(path string) {
-	rm.handleError(os.RemoveAll(path))
-	rm.logVerbose(path)
+	if rmFlg.interactive {
+		fmt.Printf(i18nRmTplConfirmationMsg, path)
+		if rm.evoke.AskForConfirmation() {
+			rm.handleError(os.RemoveAll(path))
+			rm.logVerbose(path)
+		}
+	} else {
+		rm.handleError(os.RemoveAll(path))
+		rm.logVerbose(path)
+	}
 }
 
 func (rm *RmLib) del(path string) {
@@ -68,12 +83,19 @@ func (rm *RmLib) del(path string) {
 }
 
 func (rm *RmLib) delFile(path string) {
-	writable, err := rm.dossier.IsWritable(path)
-	rm.handleError(err)
-	if writable || rmFlg.force {
-		rm.del(path)
-	} else {
-		rm.logVerbose(i18nRmTplPermDeniedToDel + path)
+	// writable, err := rm.dossier.IsWritable(path)
+	fi, err := os.Lstat(path)
+	if err == nil {
+		fm := fi.Mode()
+		if fm.IsRegular() {
+			rm.del(path)
+		} else if fm&os.ModeSymlink != 0 {
+			rm.del(path)
+		} else if fm&os.ModeNamedPipe != 0 {
+			rm.del(path)
+		} else {
+			rm.logVerbose(i18nRmTplPermDeniedToDel + path)
+		}
 	}
 }
 
@@ -84,14 +106,28 @@ func (rm *RmLib) delFolder(path string) {
 		rm.del(path)
 	} else {
 		if rmFlg.Recursive || rmFlg.recursive {
-			if rmFlg.force {
-				rm.delAll(path)
-			} else {
-				rm.delContent(path)
-			}
+			rm.delContent(path)
 		} else {
 			fmt.Printf(i18nRmTplIsNonEmptyDir, path)
 		}
+	}
+}
+
+func (rm *RmLib) forceDelete(path string) {
+	err := os.Remove(path)
+	if err != nil {
+		if strings.Contains(err.Error(), "directory not empty") {
+			if rmFlg.Recursive || rmFlg.recursive {
+				rm.handleError(os.RemoveAll(path))
+				rm.logVerbose(path)
+			} else {
+				fmt.Printf(i18nRmTplIsNonEmptyDir, path)
+			}
+		} else {
+			fmt.Println(err)
+		}
+	} else {
+		rm.logVerbose(path)
 	}
 }
 
@@ -128,12 +164,17 @@ var rmCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		for i := 0; i < len(args); i++ {
-			path, pathErr := os.Stat(args[i])
-			rmLib.handleError(pathErr)
-			if path.IsDir() {
-				rmLib.delFolder(args[i])
+			path := args[i]
+			if rmFlg.force {
+				rmLib.forceDelete(path)
 			} else {
-				rmLib.delFile(args[i])
+				fi, err := os.Lstat(args[i])
+				rmLib.handleError(err)
+				if fi.IsDir() {
+					rmLib.delFolder(path)
+				} else {
+					rmLib.delFile(path)
+				}
 			}
 		}
 	},
