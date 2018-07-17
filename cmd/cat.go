@@ -188,9 +188,9 @@ func init() {
 	// catCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command is called directly, e.g.:
-	catCmd.Flags().StringVarP(&catFlg.input, "input", "i", "", "input all output lines")
-	catCmd.Flags().StringVarP(&catFlg.output, "output", "o", "", "output all output lines")
-	catCmd.Flags().StringVarP(&catFlg.append, "append", "a", "", "append all output lines")
+	catCmd.Flags().StringVarP(&catFlg.input, "input", "I", "", "input all output lines")
+	catCmd.Flags().StringVarP(&catFlg.output, "output", "O", "", "output all output lines")
+	catCmd.Flags().StringVarP(&catFlg.append, "append", "A", "", "append all output lines")
 
 	catCmd.Flags().BoolVarP(&catFlg.number, "number", "n", false, "number all output lines")
 	catCmd.Flags().BoolVarP(&catFlg.showeof, "show-eof", "e", false, "display -- at end of each file")
