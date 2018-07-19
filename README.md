@@ -18,7 +18,11 @@ Out of the available options my personal preference is Msys2 because it can gene
 
 But one thing is common in all of them that they are so heavy. Pretty basic installation will consume more than 300 MB of your storage space. So just for running a script, it would be too much.
 
-Thus, I have started this project out of frustation of not having any light-weight tool that runs the same sets of commands on all platforms.
+Thus, I have started this project out of frustation of not having any light-weight tool that runs the same sets of shell commands on all platforms.
+
+Since, this project is made by reverse engineering the bash shell commands, so the challenge is to make it as close to POSIX as possible. 
+
+Currently I have given more priority to the useful flags of a command while implementation. So missing flags would be added in future.
 
 ### Objective
 To create a cross-platform application as a portable executable that could run built-in shell commands in a same way on native terminal of all platforms including Windows, MacOS, Linux.
@@ -41,9 +45,8 @@ To create a cross-platform application as a portable executable that could run b
  - [x] cp
  - [x] dir
  - [x] dirname
- - [ ] dirs
+ - [x] dirs
  - [x] echo
- - [ ] error
  - [x] exec
  - [x] export
  - [ ] find
@@ -58,9 +61,9 @@ To create a cross-platform application as a portable executable that could run b
  - [x] ls
  - [x] mkdir
  - [x] mv
- - [ ] popd
+ - [x] popd
  - [x] printenv
- - [ ] pushd
+ - [x] pushd
  - [x] pwd
  - [x] rm
  - [ ] sed
