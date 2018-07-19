@@ -80,7 +80,10 @@ var pushdCmd = &cobra.Command{
 		pushdLib.handleError(err)
 		pushdLib.push(absPath)
 		pushdLib.save()
-		os.Chdir(absPath)
+		if !popdFlg.nochange {
+			os.Chdir(absPath)
+			fmt.Println("-> cd ", absPath)
+		}
 		fmt.Println(pushdLib.flush())
 	},
 }

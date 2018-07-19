@@ -90,7 +90,10 @@ var popdCmd = &cobra.Command{
 		path, err := popdLib.pop()
 		popdLib.handleError(err)
 		popdLib.save()
-		os.Chdir(path)
+		if !popdFlg.nochange {
+			os.Chdir(path)
+			fmt.Println("<- cd ", path)
+		}
 		fmt.Println(popdLib.flush())
 	},
 }
