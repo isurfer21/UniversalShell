@@ -6,14 +6,13 @@ This work is licensed under the 'MIT License'.
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strings"
 
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+
+	"../lib"
 )
 
 const (
@@ -27,7 +26,7 @@ characters are represented by backslash escape sequences.
 )
 
 type DirsLib struct {
-	stack []string
+	dirStack lib.DirStack
 }
 
 func (dirs *DirsLib) handleError(err error) {
@@ -37,54 +36,35 @@ func (dirs *DirsLib) handleError(err error) {
 	}
 }
 
-func (dirs *DirsLib) load() {
-	str := viper.GetString("DIRSTACK")
-	if len(str) > 0 {
-		dirs.stack = strings.Split(str, ",")
-	} else {
-		dirs.stack = []string{}
-	}
-}
-
-func (dirs *DirsLib) clear() error {
-	if len(dirs.stack) > 0 {
-		dirs.stack = []string{}
-		return nil
-	}
-	return errors.New("Directory stack is empty!")
-}
-
-func (dirs *DirsLib) save() {
-	str := strings.Join(dirs.stack, ",")
-	viper.Set("DIRSTACK", str)
-	viper.WriteConfig()
-}
-
 func (dirs *DirsLib) flush() string {
-	home, err := homedir.Dir()
-	dirs.handleError(err)
-	str := strings.Join(dirs.stack, " ")
-	str = strings.Replace(str, home, "~", -1)
-	return str
-}
-
-func (dirs *DirsLib) long() string {
-	str := strings.Join(dirs.stack, " ")
-	return str
+	stack := dirs.dirStack.Stack
+	if !dirsFlg.long {
+		stack = dirs.dirStack.Short()
+	}
+	output := strings.Join(dirs.dirStack.Reverse(stack), " ")
+	return output
 }
 
 func (dirs *DirsLib) list() string {
-	str := strings.Join(dirs.stack, "\n")
-	return str
+	stack := dirs.dirStack.Stack
+	if !dirsFlg.long {
+		stack = dirs.dirStack.Short()
+	}
+	output := strings.Join(dirs.dirStack.Reverse(stack), "\n")
+	return output
 }
 
 func (dirs *DirsLib) vertical() string {
-	stack := []string{}
-	for i := 0; i < len(dirs.stack); i += 1 {
-		stack = append(stack, fmt.Sprintf("%d %s", i, dirs.stack[i]))
+	stack := dirs.dirStack.Stack
+	if !dirsFlg.long {
+		stack = dirs.dirStack.Short()
 	}
-	str := strings.Join(stack, "\n")
-	return str
+	stack = dirs.dirStack.Reverse(stack)
+	for i := 0; i < len(stack); i += 1 {
+		stack[i] = fmt.Sprintf("%d %s", i, stack[i])
+	}
+	output := strings.Join(stack, "\n")
+	return output
 }
 
 type DirsFlag struct {
@@ -106,13 +86,11 @@ var dirsCmd = &cobra.Command{
 	Long:  i18nDirsCmdDetail,
 	Args:  cobra.MinimumNArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		dirsLib.load()
+		dirsLib.dirStack.Load()
 		if dirsFlg.clear {
-			err := dirsLib.clear()
+			err := dirsLib.dirStack.Clear()
 			dirsLib.handleError(err)
-			dirsLib.save()
-		} else if dirsFlg.long {
-			fmt.Println(dirsLib.long())
+			dirsLib.dirStack.Save()
 		} else if dirsFlg.perline {
 			fmt.Println(dirsLib.list())
 		} else if dirsFlg.vertical {
@@ -133,7 +111,7 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command is called directly, e.g.:
 	dirsCmd.Flags().BoolVarP(&dirsFlg.clear, "clear", "c", false, "clears the directory stack by deleting all of the elements")
-	dirsCmd.Flags().BoolVarP(&dirsFlg.long, "long", "l", false, "produces a longer listing")
+	dirsCmd.Flags().BoolVarP(&dirsFlg.long, "long", "l", false, "produces a longer listing, avoids '~' for home directory")
 	dirsCmd.Flags().BoolVarP(&dirsFlg.perline, "perline", "p", false, "print the directory stack with one entry per line")
 	dirsCmd.Flags().BoolVarP(&dirsFlg.vertical, "vertical", "v", false, "print the directory stack with one entry per line with its index")
 }

@@ -12,7 +12,8 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+
+	"../lib"
 )
 
 const (
@@ -25,7 +26,7 @@ With no arguments, pushd exchanges the top two directories.
 )
 
 type PushdLib struct {
-	stack []string
+	dirStack lib.DirStack
 }
 
 func (pushd *PushdLib) handleError(err error) {
@@ -35,28 +36,9 @@ func (pushd *PushdLib) handleError(err error) {
 	}
 }
 
-func (pushd *PushdLib) load() {
-	str := viper.GetString("DIRSTACK")
-	if len(str) > 0 {
-		pushd.stack = strings.Split(str, ",")
-	} else {
-		pushd.stack = []string{}
-	}
-}
-
-func (pushd *PushdLib) push(path string) {
-	pushd.stack = append(pushd.stack, path)
-}
-
-func (pushd *PushdLib) save() {
-	str := strings.Join(pushd.stack, ",")
-	viper.Set("DIRSTACK", str)
-	viper.WriteConfig()
-}
-
 func (pushd *PushdLib) flush() string {
-	str := strings.Join(pushd.stack, " ")
-	return str
+	output := strings.Join(pushd.dirStack.Reverse(pushd.dirStack.Short()), " ")
+	return output
 }
 
 type PushdFlag struct {
@@ -73,16 +55,16 @@ var pushdCmd = &cobra.Command{
 	Use:   "pushd",
 	Short: i18nPushdCmdTitle,
 	Long:  i18nPushdCmdDetail,
-	Args:  cobra.MinimumNArgs(0),
+	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		pushdLib.load()
+		pushdLib.dirStack.Load()
 		absPath, err := filepath.Abs(args[0])
 		pushdLib.handleError(err)
-		pushdLib.push(absPath)
-		pushdLib.save()
+		pushdLib.dirStack.Push(absPath)
+		pushdLib.dirStack.Save()
 		if !popdFlg.nochange {
 			os.Chdir(absPath)
-			fmt.Println("-> cd ", absPath)
+			fmt.Printf("-> cd %s\n", absPath)
 		}
 		fmt.Println(pushdLib.flush())
 	},

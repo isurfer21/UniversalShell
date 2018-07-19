@@ -6,13 +6,13 @@ This work is licensed under the 'MIT License'.
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+
+	"../lib"
 )
 
 const (
@@ -31,7 +31,7 @@ dirs; i.e., popd is equivalent to popd +0.
 )
 
 type PopdLib struct {
-	stack []string
+	dirStack lib.DirStack
 }
 
 func (popd *PopdLib) handleError(err error) {
@@ -41,33 +41,9 @@ func (popd *PopdLib) handleError(err error) {
 	}
 }
 
-func (popd *PopdLib) load() {
-	str := viper.GetString("DIRSTACK")
-	if len(str) > 0 {
-		popd.stack = strings.Split(str, ",")
-	} else {
-		popd.stack = []string{}
-	}
-}
-
-func (popd *PopdLib) pop() (string, error) {
-	if len(popd.stack) > 0 {
-		lastItem := popd.stack[len(popd.stack)-1]
-		popd.stack = popd.stack[:len(popd.stack)-1]
-		return lastItem, nil
-	}
-	return "", errors.New("Directory stack is empty!")
-}
-
-func (popd *PopdLib) save() {
-	str := strings.Join(popd.stack, ",")
-	viper.Set("DIRSTACK", str)
-	viper.WriteConfig()
-}
-
 func (popd *PopdLib) flush() string {
-	str := strings.Join(popd.stack, " ")
-	return str
+	output := strings.Join(popd.dirStack.Reverse(popd.dirStack.Short()), " ")
+	return output
 }
 
 type PopdFlag struct {
@@ -86,13 +62,13 @@ var popdCmd = &cobra.Command{
 	Long:  i18nPopdCmdDetail,
 	Args:  cobra.MinimumNArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		popdLib.load()
-		path, err := popdLib.pop()
+		popdLib.dirStack.Load()
+		path, err := popdLib.dirStack.Pop()
 		popdLib.handleError(err)
-		popdLib.save()
+		popdLib.dirStack.Save()
 		if !popdFlg.nochange {
 			os.Chdir(path)
-			fmt.Println("<- cd ", path)
+			fmt.Printf("<- cd %s\n", path)
 		}
 		fmt.Println(popdLib.flush())
 	},
