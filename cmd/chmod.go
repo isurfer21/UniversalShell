@@ -10,6 +10,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -36,7 +37,7 @@ func (chmod *ChmodLib) handleError(err error) {
 	}
 }
 
-func (chmod *ChmodLib) isNumericMode(mode string) bool {
+func (chmod *ChmodLib) isAbsoluteMode(mode string) bool {
 	_, err := strconv.Atoi(mode)
 	if err == nil {
 		return true
@@ -44,9 +45,60 @@ func (chmod *ChmodLib) isNumericMode(mode string) bool {
 	return false
 }
 
-func (chmod *ChmodLib) toNumericMode(mode string) int {
-	num := 0700
-	return num
+func (chmod *ChmodLib) permissions() map[string]map[string]int {
+	p := map[string]map[string]int{
+		"u": {
+			"r": 400,
+			"w": 200,
+			"x": 100,
+			"s": 4000,
+		},
+		"g": {
+			"r": 040,
+			"w": 020,
+			"x": 010,
+			"s": 2000,
+		},
+		"o": {
+			"r": 004,
+			"w": 002,
+			"x": 001,
+		},
+		"": {"t": 1000},
+	}
+	return p
+}
+
+func (chmod *ChmodLib) add(t string) int {
+	s := 0
+	p := chmod.permissions()
+	c := strings.Split(t, "+")
+	l, r := c[0], c[1]
+	if len(l) < 1 {
+		for _, v := range r {
+			s += p["u"][string(v)]
+		}
+	} else if len(l) > 1 {
+		for _, lv := range l {
+			for _, rv := range r {
+				s += p[string(lv)][string(rv)]
+			}
+		}
+	} else {
+		for _, v := range r {
+			s += p[string(l)][string(v)]
+		}
+	}
+	return s
+}
+
+func (chmod *ChmodLib) toAbsoluteMode(mode string) int {
+	sum := 0
+	tokens := strings.Split(mode, ",")
+	for i := 0; i < len(tokens); i += 1 {
+		sum += chmod.add(tokens[i])
+	}
+	return sum
 }
 
 func (chmod *ChmodLib) isValidMode(mode string) bool {
@@ -77,15 +129,15 @@ var chmodCmd = &cobra.Command{
 		// filePath := args[1]
 		newMode := args[0]
 		if chmodLib.isValidMode(newMode) {
-			var numericMode int
-			if chmodLib.isNumericMode(newMode) {
-				numericMode, _ := strconv.ParseInt(newMode, 8, 64)
-				fmt.Printf("Num: %o\n", numericMode)
+			var absoluteMode int
+			if chmodLib.isAbsoluteMode(newMode) {
+				absoluteMode, _ := strconv.ParseInt(newMode, 8, 64)
+				fmt.Printf("Num: %o\n", absoluteMode)
 			} else {
-				numericMode = chmodLib.toNumericMode(newMode)
-				fmt.Printf("Sym: %d\n", numericMode)
+				absoluteMode = chmodLib.toAbsoluteMode(newMode)
+				fmt.Printf("Sym: %d\n", absoluteMode)
 			}
-			// chmodLib.handleError(os.Chmod(filePath, os.FileMode(numericMode)))
+			// chmodLib.handleError(os.Chmod(filePath, os.FileMode(absoluteMode)))
 		} else {
 			fmt.Printf(i18nChmodTplInvalidMode, newMode)
 		}
