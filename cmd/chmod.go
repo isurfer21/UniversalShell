@@ -48,47 +48,29 @@ func (chmod *ChmodLib) isAbsoluteMode(mode string) bool {
 func (chmod *ChmodLib) permissions() map[string]map[string]int {
 	p := map[string]map[string]int{
 		"u": {
-			"r": 400,
-			"w": 200,
-			"x": 100,
-			"s": 4000,
+			"r": 00400,
+			"w": 00200,
+			"x": 00100,
+			"s": 04000,
+			"t": 01000,
 		},
 		"g": {
-			"r": 040,
-			"w": 020,
-			"x": 010,
-			"s": 2000,
+			"r": 00040,
+			"w": 00020,
+			"x": 00010,
+			"s": 02000,
 		},
 		"o": {
-			"r": 004,
-			"w": 002,
-			"x": 001,
+			"r": 00004,
+			"w": 00002,
+			"x": 00001,
 		},
-		"": {"t": 1000},
 	}
 	return p
 }
 
-func (chmod *ChmodLib) add(t string) int {
-	s := 0
-	p := chmod.permissions()
-	c := strings.Split(t, "+")
-	l, r := c[0], c[1]
-	if len(l) < 1 {
-		for _, v := range r {
-			s += p["u"][string(v)]
-		}
-	} else if len(l) > 1 {
-		for _, lv := range l {
-			for _, rv := range r {
-				s += p[string(lv)][string(rv)]
-			}
-		}
-	} else {
-		for _, v := range r {
-			s += p[string(l)][string(v)]
-		}
-	}
+func (chmod *ChmodLib) add(a int, b int) int {
+	s := a + b
 	return s
 }
 
@@ -96,7 +78,26 @@ func (chmod *ChmodLib) toAbsoluteMode(mode string) int {
 	sum := 0
 	tokens := strings.Split(mode, ",")
 	for i := 0; i < len(tokens); i += 1 {
-		sum += chmod.add(tokens[i])
+		s := 0
+		p := chmod.permissions()
+		c := strings.Split(tokens[i], "+")
+		l, r := c[0], c[1]
+		if len(l) < 1 {
+			for _, v := range r {
+				s += p["u"][string(v)]
+			}
+		} else if len(l) > 1 {
+			for _, lv := range l {
+				for _, rv := range r {
+					s += p[string(lv)][string(rv)]
+				}
+			}
+		} else {
+			for _, v := range r {
+				s += p[string(l)][string(v)]
+			}
+		}
+		sum += s
 	}
 	return sum
 }
@@ -126,7 +127,7 @@ var chmodCmd = &cobra.Command{
 	Long:  i18nChmodCmdDetail,
 	Args:  cobra.MinimumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		// filePath := args[1]
+		filePath := args[1]
 		newMode := args[0]
 		if chmodLib.isValidMode(newMode) {
 			var absoluteMode int
@@ -137,7 +138,7 @@ var chmodCmd = &cobra.Command{
 				absoluteMode = chmodLib.toAbsoluteMode(newMode)
 				fmt.Printf("Sym: %d\n", absoluteMode)
 			}
-			// chmodLib.handleError(os.Chmod(filePath, os.FileMode(absoluteMode)))
+			chmodLib.handleError(os.Chmod(filePath, os.FileMode(absoluteMode)))
 		} else {
 			fmt.Printf(i18nChmodTplInvalidMode, newMode)
 		}
