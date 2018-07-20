@@ -76,32 +76,63 @@ func (chmod *ChmodLib) printFileInfo(path string) {
 	}
 }
 
-func (chmod *ChmodLib) toAbsoluteMode(mode string) int {
-	sum := 0
-	tokens := strings.Split(mode, ",")
-	for i := 0; i < len(tokens); i += 1 {
-		s := 0
-		p := chmod.permissions()
-		c := strings.Split(tokens[i], "+")
-		l, r := c[0], c[1]
-		if len(l) < 1 {
-			for _, v := range r {
-				s += p["u"][string(v)]
-			}
-		} else if len(l) > 1 {
-			for _, lv := range l {
-				for _, rv := range r {
-					s += p[string(lv)][string(rv)]
-				}
-			}
-		} else {
-			for _, v := range r {
-				s += p[string(l)][string(v)]
+func (chmod *ChmodLib) toNumericMode(l string, r string) int {
+	s := 0
+	p := chmod.permissions()
+	if len(l) > 1 {
+		for _, lv := range l {
+			for _, rv := range r {
+				s += p[string(lv)][string(rv)]
 			}
 		}
-		sum += s
+	} else {
+		for _, v := range r {
+			s += p[string(l)][string(v)]
+		}
 	}
-	return sum
+	return s
+}
+
+func (chmod *ChmodLib) toAbsoluteMode(mode string, path string) int {
+	absmode := 0
+	sum := 0
+	if strings.Contains(mode, "a") {
+		mode = strings.Replace(mode, "a", "ugo", -1)
+	}
+	fmt.Printf("mode: %s \n", mode)
+	tokens := strings.Split(mode, ",")
+	for i := 0; i < len(tokens); i += 1 {
+		if strings.Contains(tokens[i], "+") {
+			c := strings.Split(tokens[i], "+")
+			if len(c[0]) == 0 {
+				c[0] = "u"
+			}
+			sum += chmod.toNumericMode(c[0], c[1])
+		} else if strings.Contains(tokens[i], "-") {
+			c := strings.Split(tokens[i], "-")
+			if len(c[0]) == 0 {
+				c[0] = "u"
+			}
+			sum -= chmod.toNumericMode(c[0], c[1])
+		} else if strings.Contains(tokens[i], "=") {
+			c := strings.Split(tokens[i], "=")
+			if len(c[0]) == 0 {
+				c[0] = "ugo"
+			}
+			sum += chmod.toNumericMode(c[0], c[1])
+		}
+	}
+	if strings.Contains(mode, "+") || strings.Contains(mode, "-") {
+		fi, err := os.Lstat(path)
+		chmod.handleError(err)
+		fmt.Printf("%v -> %#o + %#o \n", fi.Mode(), int(fi.Mode()), sum)
+		absmode = int(fi.Mode()) + sum
+		fmt.Printf("%#o \n", absmode)
+	}
+	if strings.Contains(mode, "=") {
+		absmode = sum
+	}
+	return absmode
 }
 
 func (chmod *ChmodLib) isSymbolicMode(mode string) bool {
@@ -144,7 +175,7 @@ var chmodCmd = &cobra.Command{
 			}
 		} else {
 			if chmodLib.isSymbolicMode(newMode) {
-				absoluteMode := chmodLib.toAbsoluteMode(newMode)
+				absoluteMode := chmodLib.toAbsoluteMode(newMode, filePath)
 				chmodLib.handleError(os.Chmod(filePath, os.FileMode(absoluteMode)))
 				if chmodFlg.verbose {
 					fmt.Printf("Mode: %s -> %#o (%d)\n", newMode, absoluteMode, absoluteMode)
