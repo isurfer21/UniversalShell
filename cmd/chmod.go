@@ -37,7 +37,7 @@ func (chmod *ChmodLib) handleError(err error) {
 	}
 }
 
-func (chmod *ChmodLib) isAbsoluteMode(mode string) bool {
+func (chmod *ChmodLib) isNumber(mode string) bool {
 	_, err := strconv.Atoi(mode)
 	if err == nil {
 		return true
@@ -69,9 +69,11 @@ func (chmod *ChmodLib) permissions() map[string]map[string]int {
 	return p
 }
 
-func (chmod *ChmodLib) add(a int, b int) int {
-	s := a + b
-	return s
+func (chmod *ChmodLib) printFileInfo(path string) {
+	fi, err := os.Lstat(path)
+	if err == nil {
+		fmt.Printf("Info: %s %s\n", fi.Mode().String(), path)
+	}
 }
 
 func (chmod *ChmodLib) toAbsoluteMode(mode string) int {
@@ -102,7 +104,7 @@ func (chmod *ChmodLib) toAbsoluteMode(mode string) int {
 	return sum
 }
 
-func (chmod *ChmodLib) isValidMode(mode string) bool {
+func (chmod *ChmodLib) isSymbolicMode(mode string) bool {
 	isValid, err := regexp.MatchString("[ugoa]*([-+=]([rwxXst]*|[ugo]))+|[-+=][0-7]+", mode)
 	chmod.handleError(err)
 	return isValid
@@ -129,18 +131,28 @@ var chmodCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		filePath := args[1]
 		newMode := args[0]
-		if chmodLib.isValidMode(newMode) {
-			var absoluteMode int
-			if chmodLib.isAbsoluteMode(newMode) {
-				absoluteMode, _ := strconv.ParseInt(newMode, 8, 64)
-				fmt.Printf("Num: %o\n", absoluteMode)
+		if chmodLib.isNumber(newMode) {
+			absoluteMode, _ := strconv.ParseInt(newMode, 8, 64)
+			if absoluteMode > 0 && absoluteMode <= 07777 {
+				chmodLib.handleError(os.Chmod(filePath, os.FileMode(absoluteMode)))
+				if chmodFlg.verbose {
+					fmt.Printf("Mode: %#o (%d)\n", absoluteMode, absoluteMode)
+					chmodLib.printFileInfo(filePath)
+				}
 			} else {
-				absoluteMode = chmodLib.toAbsoluteMode(newMode)
-				fmt.Printf("Sym: %d\n", absoluteMode)
+				fmt.Printf(i18nChmodTplInvalidMode, newMode)
 			}
-			chmodLib.handleError(os.Chmod(filePath, os.FileMode(absoluteMode)))
 		} else {
-			fmt.Printf(i18nChmodTplInvalidMode, newMode)
+			if chmodLib.isSymbolicMode(newMode) {
+				absoluteMode := chmodLib.toAbsoluteMode(newMode)
+				chmodLib.handleError(os.Chmod(filePath, os.FileMode(absoluteMode)))
+				if chmodFlg.verbose {
+					fmt.Printf("Mode: %s -> %#o (%d)\n", newMode, absoluteMode, absoluteMode)
+					chmodLib.printFileInfo(filePath)
+				}
+			} else {
+				fmt.Printf(i18nChmodTplInvalidMode, newMode)
+			}
 		}
 	},
 }
