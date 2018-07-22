@@ -6,8 +6,6 @@ This work is licensed under the 'MIT License'.
 package cmd
 
 import (
-	// "bytes"
-	// "encoding/binary"
 	"fmt"
 	"os"
 	"regexp"

@@ -40,7 +40,7 @@ To create a cross-platform application as a portable executable that could run b
  - [x] archive
  - [x] basename
  - [x] cat
- - [ ] chmod
+ - [x] chmod
  - [x] clear
  - [x] cp
  - [x] dir
