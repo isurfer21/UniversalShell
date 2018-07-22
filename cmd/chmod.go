@@ -6,6 +6,8 @@ This work is licensed under the 'MIT License'.
 package cmd
 
 import (
+	// "bytes"
+	// "encoding/binary"
 	"fmt"
 	"os"
 	"regexp"
@@ -45,8 +47,15 @@ func (chmod *ChmodLib) isNumber(mode string) bool {
 	return false
 }
 
-func (chmod *ChmodLib) permissions() map[string]map[string]int {
-	p := map[string]map[string]int{
+func (chmod *ChmodLib) printFileInfo(path string) {
+	fi, err := os.Lstat(path)
+	if err == nil {
+		fmt.Printf("Info: %s %s\n", fi.Mode().String(), path)
+	}
+}
+
+func (chmod *ChmodLib) replacePermission(mode string) int {
+	perm := map[string]map[string]int{
 		"u": {
 			"r": 00400,
 			"w": 00200,
@@ -66,73 +75,147 @@ func (chmod *ChmodLib) permissions() map[string]map[string]int {
 			"x": 00001,
 		},
 	}
-	return p
-}
-
-func (chmod *ChmodLib) printFileInfo(path string) {
-	fi, err := os.Lstat(path)
-	if err == nil {
-		fmt.Printf("Info: %s %s\n", fi.Mode().String(), path)
-	}
-}
-
-func (chmod *ChmodLib) toNumericMode(l string, r string) int {
-	s := 0
-	p := chmod.permissions()
-	if len(l) > 1 {
+	sum := 0
+	tokens := strings.Split(mode, ",")
+	for i := 0; i < len(tokens); i += 1 {
+		var separator string
+		if strings.Contains(tokens[i], "=") {
+			separator = "="
+		}
+		if strings.Contains(tokens[i], "+") {
+			separator = "+"
+		}
+		if strings.Contains(tokens[i], "-") {
+			separator = "-"
+		}
+		c := strings.Split(tokens[i], separator)
+		l, r := c[0], c[1]
+		if len(l) == 0 {
+			l = "ugo"
+		}
 		for _, lv := range l {
 			for _, rv := range r {
-				s += p[string(lv)][string(rv)]
+				sum += perm[string(lv)][string(rv)]
 			}
 		}
-	} else {
-		for _, v := range r {
-			s += p[string(l)][string(v)]
+	}
+	return sum
+}
+
+func (chmod *ChmodLib) modifyPermissionChunk(oldMode int, newMode string) int {
+	perm := map[string]map[string]int{
+		"u": {
+			"r": 8,
+			"w": 7,
+			"x": 6,
+			"s": 11,
+			"t": 9,
+		},
+		"g": {
+			"r": 5,
+			"w": 4,
+			"x": 3,
+			"s": 10,
+		},
+		"o": {
+			"r": 2,
+			"w": 1,
+			"x": 0,
+		},
+	}
+	m := []rune(fmt.Sprintf("%#b", oldMode))
+	var separator string
+	var bit rune
+	if strings.Contains(newMode, "+") {
+		separator = "+"
+		bit = 49
+	} else if strings.Contains(newMode, "-") {
+		separator = "-"
+		bit = 48
+	}
+	c := strings.Split(newMode, separator)
+	l, r := c[0], c[1]
+	if len(l) == 0 {
+		l = "ugo"
+	}
+	for _, lv := range l {
+		for _, rv := range r {
+			n := len(m) - 1
+			p := perm[string(lv)][string(rv)]
+			if n >= p {
+				m[n-p] = bit
+			}
 		}
 	}
-	return s
+	s, _ := strconv.ParseInt(string(m), 2, 64)
+	return int(s)
+}
+
+// todo
+func (chmod *ChmodLib) replacePermissionChunk(oldMode int, newMode string) int {
+	perm := map[string]map[string]int{
+		"u": {
+			"r": 8,
+			"w": 7,
+			"x": 6,
+			"s": 11,
+			"t": 9,
+		},
+		"g": {
+			"r": 5,
+			"w": 4,
+			"x": 3,
+			"s": 10,
+		},
+		"o": {
+			"r": 2,
+			"w": 1,
+			"x": 0,
+		},
+	}
+	m := []rune(fmt.Sprintf("%#b", oldMode))
+	c := strings.Split(newMode, "=")
+	l, r := c[0], c[1]
+	if len(l) == 0 {
+		l = "ugo"
+	}
+	for _, lv := range l {
+		for k := range perm[string(lv)] {
+			n := len(m) - 1
+			p := perm[string(lv)][string(k)]
+			if n >= p {
+				if strings.Contains(r, string(k)) {
+					m[n-p] = 49
+				} else {
+					m[n-p] = 48
+				}
+			}
+		}
+	}
+	s, _ := strconv.ParseInt(string(m), 2, 64)
+	return int(s)
 }
 
 func (chmod *ChmodLib) toAbsoluteMode(mode string, path string) int {
-	absmode := 0
-	sum := 0
+	fi, err := os.Lstat(path)
+	chmod.handleError(err)
+	absMode := int(fi.Mode())
 	if strings.Contains(mode, "a") {
 		mode = strings.Replace(mode, "a", "ugo", -1)
 	}
-	fmt.Printf("mode: %s \n", mode)
-	tokens := strings.Split(mode, ",")
-	for i := 0; i < len(tokens); i += 1 {
-		if strings.Contains(tokens[i], "+") {
-			c := strings.Split(tokens[i], "+")
-			if len(c[0]) == 0 {
-				c[0] = "u"
+	if !chmodFlg.force {
+		tokens := strings.Split(mode, ",")
+		for i := 0; i < len(tokens); i += 1 {
+			if strings.Contains(tokens[i], "+") || strings.Contains(tokens[i], "-") {
+				absMode = chmod.modifyPermissionChunk(absMode, mode)
+			} else if strings.Contains(mode, "=") {
+				absMode = chmod.replacePermissionChunk(absMode, mode)
 			}
-			sum += chmod.toNumericMode(c[0], c[1])
-		} else if strings.Contains(tokens[i], "-") {
-			c := strings.Split(tokens[i], "-")
-			if len(c[0]) == 0 {
-				c[0] = "u"
-			}
-			sum -= chmod.toNumericMode(c[0], c[1])
-		} else if strings.Contains(tokens[i], "=") {
-			c := strings.Split(tokens[i], "=")
-			if len(c[0]) == 0 {
-				c[0] = "ugo"
-			}
-			sum += chmod.toNumericMode(c[0], c[1])
 		}
+	} else {
+		absMode = chmod.replacePermission(mode)
 	}
-	if strings.Contains(mode, "+") || strings.Contains(mode, "-") {
-		fi, err := os.Lstat(path)
-		chmod.handleError(err)
-		fmt.Printf("%v -> %#o + %#o \n", fi.Mode(), int(fi.Mode()), sum)
-		absmode = int(fi.Mode()) + sum
-		fmt.Printf("%#o \n", absmode)
-	}
-	if strings.Contains(mode, "=") {
-		absmode = sum
-	}
-	return absmode
+	return absMode
 }
 
 func (chmod *ChmodLib) isSymbolicMode(mode string) bool {
@@ -143,6 +226,7 @@ func (chmod *ChmodLib) isSymbolicMode(mode string) bool {
 
 type ChmodFlag struct {
 	silent    bool
+	force     bool
 	verbose   bool
 	changes   bool
 	recursive bool
@@ -167,7 +251,7 @@ var chmodCmd = &cobra.Command{
 			if absoluteMode > 0 && absoluteMode <= 07777 {
 				chmodLib.handleError(os.Chmod(filePath, os.FileMode(absoluteMode)))
 				if chmodFlg.verbose {
-					fmt.Printf("Mode: %#o (%d)\n", absoluteMode, absoluteMode)
+					fmt.Printf("Mode: %#o \n", absoluteMode, absoluteMode)
 					chmodLib.printFileInfo(filePath)
 				}
 			} else {
@@ -198,8 +282,9 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command is called directly, e.g.:
 	chmodCmd.Flags().BoolVarP(&chmodFlg.silent, "silent", "f", false, "suppress most error messages")
+	chmodCmd.Flags().BoolVarP(&chmodFlg.force, "force", "F", false, "overwrite other permissions")
 	chmodCmd.Flags().BoolVarP(&chmodFlg.verbose, "verbose", "v", false, "output a diagnostic for every file processed")
 	chmodCmd.Flags().BoolVarP(&chmodFlg.changes, "changes", "c", false, "like verbose but report only when a change is made")
-	chmodCmd.Flags().BoolVarP(&chmodFlg.recursive, "recursive", "R", false, "change files and directories recursivel")
+	chmodCmd.Flags().BoolVarP(&chmodFlg.recursive, "recursive", "R", false, "change files and directories recursively")
 
 }
