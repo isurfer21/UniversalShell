@@ -74,10 +74,10 @@ To create a cross-platform application as a portable executable that could run b
  - [x] tar
  - [x] tmpdir
  - [x] touch
- - [x] uniq
  - [x] uname
- - [x] unsetenv
+ - [x] uniq
  - [x] unrar
+ - [x] unsetenv
  - [x] unzip
  - [x] which
  - [x] whoami
@@ -138,9 +138,9 @@ README.md
 src
 
 $ ush ls -l
-drwxr-xr-x	-	Jul 03, 2018 15:45	.git/
+drwxr-xr-x	-		Jul 03, 2018 15:45	.git/
 -rw-r--r--	24.0B	Jul 02, 2018 11:40	.gitignore
-drwxr-xr-x	-	Jul 03, 2018 15:45	cmd/
+drwxr-xr-x	-		Jul 03, 2018 15:45	cmd/
 -rw-r--r--	1.0KB	Jun 29, 2018 11:50	LICENSE
 -rw-r--r--	4.6KB	Jul 03, 2018 15:59	README.md
 -rwxr-xr-x	9.6MB	Jul 03, 2018 15:53	ush
@@ -233,6 +233,20 @@ The flag *-h* in the last line can be replaced by any available commands.
 > go run ush.go -h
 ```
 The flag *-h* in the last line can be replaced by any available commands.
+
+##### Cross-platform builder 
+If Lua v5.3 or above is installed on your system, then go ahead with this build tool.
+
+Compiling the build tool would be useful
+```
+$ luac -o builder builder.lua
+```
+Now this compiled builder can be used to perform various build tasks
+```
+$ lua builder version
+$ lua builder help
+```
+Use any commands listed in the builder help to generate related output.
 
 ### Cross-platform shell scripting with Ush using Lua
 [Lua](http://www.lua.org/) is a powerful, efficient, lightweight, embeddable scripting language. It supports procedural programming, object-oriented programming, functional programming, data-driven programming, and data description.
