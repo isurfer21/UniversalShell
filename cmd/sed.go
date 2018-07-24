@@ -8,10 +8,10 @@ package cmd
 import (
 	// "bufio"
 	"fmt"
-	// "io"
 	"io/ioutil"
 	"os"
-	// "strings"
+	"regexp"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -78,6 +78,16 @@ var sedCmd = &cobra.Command{
 	Long:  i18nSedCmdDetail,
 	Run: func(cmd *cobra.Command, args []string) {
 		// fmt.Println(sedFlg.input, sedFlg.output, sedFlg.append)
+		r, _ := regexp.Compile("(s/.*/.*/[gmisU]*)")
+		if r.MatchString(args[0]) {
+			pattern := args[0]
+			filename := args[1]
+			iContent := sedLib.readFile(filename)
+			s := strings.Split(pattern, "/")
+			re := regexp.MustCompile(iContent)
+			oContent := re.ReplaceAllString(s[1], s[2])
+			sedLib.writeFile(filename, oContent)
+		}
 	},
 }
 

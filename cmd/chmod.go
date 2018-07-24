@@ -149,7 +149,6 @@ func (chmod *ChmodLib) modifyPermissionChunk(oldMode int, newMode string) int {
 	return int(s)
 }
 
-// todo
 func (chmod *ChmodLib) replacePermissionChunk(oldMode int, newMode string) int {
 	perm := map[string]map[string]int{
 		"u": {
