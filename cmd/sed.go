@@ -80,12 +80,23 @@ var sedCmd = &cobra.Command{
 		// fmt.Println(sedFlg.input, sedFlg.output, sedFlg.append)
 		r, _ := regexp.Compile("(s/.*/.*/[gmisU]*)")
 		if r.MatchString(args[0]) {
-			pattern := args[0]
-			filename := args[1]
+			substitute, filename := args[0], args[1]
 			iContent := sedLib.readFile(filename)
-			s := strings.Split(pattern, "/")
-			re := regexp.MustCompile(iContent)
-			oContent := re.ReplaceAllString(s[1], s[2])
+			s := strings.Split(substitute, "/")
+			pattern, replacement, rexflag := s[1], s[2], s[3]
+			rex := regexp.MustCompile(pattern)
+			oContent := ""
+			if strings.Contains(rexflag, "g") {
+				oContent = rex.ReplaceAllString(iContent, replacement)
+			} else {
+				if strings.Contains(rexflag, "i") {
+					iContent = strings.ToLower(iContent)
+				}
+				motif := rex.FindAllString(iContent, 1)
+				if len(motif) > 0 {
+					oContent = strings.Replace(iContent, motif[0], replacement, 1)
+				}
+			}
 			sedLib.writeFile(filename, oContent)
 		}
 	},
