@@ -14,6 +14,8 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+
+	"../lib"
 )
 
 const (
@@ -31,6 +33,7 @@ distinguishes it from other types of editors.
 )
 
 type SedLib struct {
+	dossier lib.Dossier
 }
 
 func (sed *SedLib) handleError(err error) {
@@ -64,6 +67,7 @@ type SedFlag struct {
 	output     string
 	append     string
 	expression string
+	inplace    bool
 }
 
 var (
@@ -80,7 +84,37 @@ var sedCmd = &cobra.Command{
 		// fmt.Println(sedFlg.input, sedFlg.output, sedFlg.append)
 		r, _ := regexp.Compile("(s/.*/.*/[gmisU]*)")
 		if r.MatchString(args[0]) {
-			substitute, filename := args[0], args[1]
+			var substitute string
+			var filename string
+			if sedFlg.expression != "" {
+				substitute = sedFlg.expression
+				if sedFlg.input != "" {
+					filename = sedFlg.input
+				} else {
+					if len(args) > 0 {
+						filename = args[0]
+					} else if sedFlg.output != "" {
+						filename = sedFlg.output
+					} else if sedFlg.append != "" {
+						filename = sedFlg.append
+					}
+				}
+			} else {
+				if len(args) > 0 {
+					substitute = args[0]
+					if sedFlg.input != "" {
+						filename = sedFlg.input
+					} else {
+						if len(args) > 1 {
+							filename = args[1]
+						} else if sedFlg.output != "" {
+							filename = sedFlg.output
+						} else if sedFlg.append != "" {
+							filename = sedFlg.append
+						}
+					}
+				}
+			}
 			iContent := sedLib.readFile(filename)
 			s := strings.Split(substitute, "/")
 			pattern, replacement, rexflag := s[1], s[2], s[3]
@@ -97,7 +131,17 @@ var sedCmd = &cobra.Command{
 					oContent = strings.Replace(iContent, motif[0], replacement, 1)
 				}
 			}
-			sedLib.writeFile(filename, oContent)
+			if sedFlg.output != "" {
+				sedLib.handleError(sedLib.dossier.CopyFile(filename, sedFlg.output))
+				sedLib.writeFile(sedFlg.output, oContent)
+			} else if sedFlg.append != "" {
+				sedLib.handleError(sedLib.dossier.CopyFile(filename, sedFlg.append))
+				sedLib.writeFile(sedFlg.append, oContent)
+			} else if sedFlg.inplace {
+				sedLib.writeFile(filename, oContent)
+			} else {
+				fmt.Println(oContent)
+			}
 		}
 	},
 }
@@ -111,9 +155,10 @@ func init() {
 	// sedCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command is called directly, e.g.:
-	sedCmd.Flags().StringVarP(&sedFlg.input, "input", "i", "", "input all output lines")
-	sedCmd.Flags().StringVarP(&sedFlg.output, "output", "o", "", "output all output lines")
-	sedCmd.Flags().StringVarP(&sedFlg.append, "append", "a", "", "append all output lines")
+	sedCmd.Flags().StringVarP(&sedFlg.input, "input", "I", "", "input all output lines")
+	sedCmd.Flags().StringVarP(&sedFlg.output, "output", "O", "", "output all output lines")
+	sedCmd.Flags().StringVarP(&sedFlg.append, "append", "A", "", "append all output lines")
 	// ‹›«»
 	sedCmd.Flags().StringVarP(&sedFlg.expression, "expression", "e", "", "expression all output lines")
+	sedCmd.Flags().BoolVarP(&sedFlg.inplace, "in-place", "i", false, "files are to be edited in-place")
 }
