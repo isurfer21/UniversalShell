@@ -151,6 +151,11 @@ drwxr-xr-x	-		Jul 03, 2018 15:45	cmd/
 ### For end-users
 You can generate an executable for your system via following commands.
 
+#### Download pre-built binary
+ - For *Windows*, [Ush_windows_x86-64.zip](https://app.box.com/s/ahokngfj2ekjvccw7mcnb7snwl3urv0a)
+ - For *MacOS*, [Ush_macos_x86-64.gz](https://app.box.com/s/ta9ra11fiulqwa3frtmnouckawixpzr3)
+ - For *Linux*, [Ush_linux_x86-64.bz2](https://app.box.com/s/5ma7anx1t829w1nhoq9r2ox5sk0iwda4)
+
 #### Installation using ```go get``` 
 
 ##### On MacOS / Linux 
