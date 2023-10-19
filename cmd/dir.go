@@ -12,7 +12,7 @@ import (
 	tm "github.com/buger/goterm"
 	"github.com/spf13/cobra"
 
-	"../lib"
+	"github.com/isurfer21/UniversalShell/lib"
 )
 
 const (

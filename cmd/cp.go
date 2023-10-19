@@ -11,7 +11,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"../lib"
+	"github.com/isurfer21/UniversalShell/lib"
 )
 
 const (

@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"../lib"
+	"github.com/isurfer21/UniversalShell/lib"
 )
 
 const (
